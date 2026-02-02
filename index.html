@@ -31,8 +31,7 @@
     <script>
       /** 
        * Initialize process shim safely.
-       * We check if process.env.API_KEY already exists to avoid overwriting it 
-       * if it was injected by the build system.
+       * The build system injects process.env.API_KEY; we ensure it exists.
        */
       window.process = window.process || { env: {} };
       window.process.env = window.process.env || {};

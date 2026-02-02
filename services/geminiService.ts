@@ -14,7 +14,7 @@ export interface AIDetectionResponse {
 const getAI = () => {
   const apiKey = process.env.API_KEY;
   if (!apiKey) {
-    console.error("CRITICAL: Gemini API Key is missing from process.env.API_KEY");
+    console.error("CRITICAL: Gemini API Key is missing. Check Vercel Environment Variables.");
   }
   return new GoogleGenAI({ apiKey: apiKey || '' });
 };
@@ -69,7 +69,7 @@ export const analyzeCropImage = async (base64Image: string): Promise<AIDetection
         data.grounding_links = chunks
           .filter(c => c.web)
           .map(c => ({
-            title: c.web?.title || 'Resource',
+            title: c.web?.title || 'Expert Resource',
             uri: c.web?.uri || '',
           }))
           .filter(link => link.uri)
@@ -83,7 +83,7 @@ export const analyzeCropImage = async (base64Image: string): Promise<AIDetection
     return data as AIDetectionResponse;
   } catch (error) {
     console.error('Gemini Analysis Error:', error);
-    throw new Error('Analysis failed. Please try again with a clearer image.');
+    throw new Error('Analysis failed. Please check the console for details.');
   }
 };
 
@@ -91,7 +91,7 @@ export const chatWithExpert = async (history: ChatMessage[], message: string) =>
   const ai = getAI();
   
   try {
-    // We clean history to remove UI-only properties like 'links' before sending to SDK
+    // Clean history to match SDK expectations (role and parts only)
     const cleanedHistory = history.map(h => ({
       role: h.role,
       parts: h.parts
@@ -99,26 +99,30 @@ export const chatWithExpert = async (history: ChatMessage[], message: string) =>
 
     const chat = ai.chats.create({
       model: 'gemini-3-flash-preview',
-      history: cleanedHistory, // Passing history allows the model to remember the conversation
+      history: cleanedHistory,
       config: {
-        systemInstruction: 'You are an Expert Agronomist AI named AgroGuard Advisor. Provide helpful, accurate advice to farmers regarding crop health, pest control, and soil management. Use your grounding tool to find up-to-date regional information.',
+        systemInstruction: 'You are an Expert Agronomist AI. Provide helpful, accurate advice to farmers regarding crop health and soil management. Use Google Search to find specific regional details if needed.',
         tools: [{ googleSearch: {} }],
       },
     });
     
     const response = await chat.sendMessage({ message });
-    const text = response.text || "I'm having trouble connecting to my knowledge base.";
+    const text = response.text || "I am currently processing your request.";
     
-    // Extract grounding chunks from metadata
+    // Extract links from grounding metadata
     const groundingChunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
     const links = groundingChunks
       .filter(c => c.web)
       .map(c => ({ title: c.web?.title, uri: c.web?.uri }))
-      .filter(l => l.uri); // Ensure we only return valid links
+      .filter(l => l.uri);
 
     return { text, links };
-  } catch (error) {
-    console.error('Expert Chat Detailed Error:', error);
-    throw error; // Re-throw so the UI can catch it
+  } catch (error: any) {
+    console.error('Gemini Chat Error Details:', {
+      message: error.message,
+      status: error.status,
+      stack: error.stack
+    });
+    throw error;
   }
 };
