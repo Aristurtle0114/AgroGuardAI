@@ -39,8 +39,8 @@ export interface MarketPrice {
  * Analyzes crop images using Gemini-3-flash-preview with multimodal input.
  */
 export const analyzeCropImage = async (base64Image: string): Promise<AIDetectionResponse> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  
+  const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
+
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
     contents: {
@@ -81,12 +81,12 @@ export const analyzeCropImage = async (base64Image: string): Promise<AIDetection
  * Fetches real-time weather using Gemini Search and Maps grounding.
  */
 export const getWeatherForecast = async (location: string, lat?: number, lng?: number): Promise<WeatherForecastResponse> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  
+  const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
+
   const locationString = lat && lng ? `coordinates ${lat}, ${lng}` : location;
-  
+
   const response = await ai.models.generateContent({
-    model: 'gemini-flash-latest', 
+    model: 'gemini-flash-latest',
     contents: `Get a real-time hyper-local 5-day weather forecast for ${locationString}. 
     Focus on data critical for farming: humidity, precipitation, and extreme temps for these specific coordinates. 
     Evaluate agronomic risk level (Low/Med/High) for each day (e.g., High humidity + moderate temp = High risk for fungal blight).
@@ -109,7 +109,7 @@ export const getWeatherForecast = async (location: string, lat?: number, lng?: n
 
   const text = response.text || "";
   let parsed: any = { forecast: [] };
-  
+
   try {
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
@@ -142,8 +142,8 @@ export const getWeatherForecast = async (location: string, lat?: number, lng?: n
  * Fetches current market prices for major Philippine crops using Google Search grounding.
  */
 export const getMarketPrices = async (): Promise<{ prices: MarketPrice[], links: { title: string, uri: string }[] }> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  
+  const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
+
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
     contents: "Provide the current market prices (PHP) for famous crops in the Philippines: Palay (Rice), Corn (Yellow), Coconut (Copra), Sugarcane, Banana (Lakatan), Pineapple, and Mango. Include the price, unit (e.g., per kg), and a general trend.",
@@ -174,7 +174,7 @@ export const getMarketPrices = async (): Promise<{ prices: MarketPrice[], links:
   });
 
   const parsed = JSON.parse(response.text || '{"prices": []}');
-  
+
   const groundingLinks: { title: string; uri: string }[] = [];
   const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
   if (chunks) {
@@ -195,7 +195,7 @@ export const getMarketPrices = async (): Promise<{ prices: MarketPrice[], links:
  * Communicates with the Agronomist Expert AI model with full conversation history.
  */
 export const chatWithExpert = async (history: ChatMessage[], message: string) => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
   const chatHistory = history.map(m => ({ role: m.role, parts: m.parts }));
 
   const response = await ai.models.generateContent({
@@ -217,8 +217,8 @@ export const chatWithExpert = async (history: ChatMessage[], message: string) =>
     });
   }
 
-  return { 
-    text: response.text || "Connection error.", 
-    links: groundingLinks 
+  return {
+    text: response.text || "Connection error.",
+    links: groundingLinks
   };
 };
