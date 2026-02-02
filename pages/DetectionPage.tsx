@@ -36,7 +36,7 @@ const DetectionPage: React.FC<DetectionPageProps> = ({ user, onDetectionComplete
     try {
       const base64Data = preview.split(',')[1];
       const result = await analyzeCropImage(base64Data);
-      
+
       const newDetection = dataService.addDetection({
         user_id: user.id,
         crop_type: result.crop_type,
@@ -63,14 +63,14 @@ const DetectionPage: React.FC<DetectionPageProps> = ({ user, onDetectionComplete
       <div className="text-center mb-10">
         <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white mb-4">Analyze Your Crop</h1>
         <p className="text-slate-600 dark:text-slate-400 max-w-xl mx-auto text-sm sm:text-base">
-          Redeem your expertise. Take a clear photo of the leaf area. 
-          The AI will cross-reference live databases with your Ticket ID: {user.ticket_code}.
+          Redeem your expertise. Take a clear photo of the leaf area.
+          The AI will cross-reference live databases with your profile.
         </p>
       </div>
 
       <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
         {!preview ? (
-          <div 
+          <div
             onClick={triggerFileInput}
             className="p-12 md:p-20 text-center flex flex-col items-center justify-center cursor-pointer group transition-all"
           >
@@ -79,13 +79,13 @@ const DetectionPage: React.FC<DetectionPageProps> = ({ user, onDetectionComplete
             </div>
             <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Click to upload or use camera</h3>
             <p className="text-slate-500 dark:text-slate-400 text-sm mb-6">Supports JPG, PNG and WEBP (Max 10MB)</p>
-            <input 
-              type="file" 
-              className="hidden" 
-              ref={fileInputRef} 
-              accept="image/*" 
-              capture="environment" 
-              onChange={handleFileChange} 
+            <input
+              type="file"
+              className="hidden"
+              ref={fileInputRef}
+              accept="image/*"
+              capture="environment"
+              onChange={handleFileChange}
             />
           </div>
         ) : (

@@ -76,33 +76,33 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate, onSelectDetecti
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 relative">
-      
+
       {showLocationPrompt && (
         <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[60] w-[90%] max-w-lg bg-white dark:bg-slate-800 border-2 border-amber-500 rounded-2xl shadow-2xl p-6 animate-bounce-short">
           <div className="flex items-start space-x-4">
-             <div className="w-12 h-12 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center text-amber-600 shrink-0">
-                <i className="fa-solid fa-location-crosshairs text-xl"></i>
-             </div>
-             <div>
-                <h4 className="font-bold text-slate-900 dark:text-white">Pinpoint Location Required</h4>
-                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
-                  To analyze the <strong>Soil Health</strong> of your land, please use the map to pinpoint your farm location in your profile settings.
-                </p>
-                <div className="mt-4 flex space-x-3">
-                  <button 
-                    onClick={() => onNavigate('profile')}
-                    className="bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-emerald-700 transition-all"
-                  >
-                    Go to Map
-                  </button>
-                  <button 
-                    onClick={() => setShowLocationPrompt(false)}
-                    className="text-slate-500 dark:text-slate-400 text-xs font-bold px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-all"
-                  >
-                    Dismiss
-                  </button>
-                </div>
-             </div>
+            <div className="w-12 h-12 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center text-amber-600 shrink-0">
+              <i className="fa-solid fa-location-crosshairs text-xl"></i>
+            </div>
+            <div>
+              <h4 className="font-bold text-slate-900 dark:text-white">Pinpoint Location Required</h4>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                To analyze the <strong>Soil Health</strong> of your land, please use the map to pinpoint your farm location in your profile settings.
+              </p>
+              <div className="mt-4 flex space-x-3">
+                <button
+                  onClick={() => onNavigate('profile')}
+                  className="bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-emerald-700 transition-all"
+                >
+                  Go to Map
+                </button>
+                <button
+                  onClick={() => setShowLocationPrompt(false)}
+                  className="text-slate-500 dark:text-slate-400 text-xs font-bold px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-all"
+                >
+                  Dismiss
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -114,9 +114,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate, onSelectDetecti
               Verified Farmer
             </span>
             {profile?.latitude && (
-               <span className="bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-widest border border-blue-200 dark:border-blue-800 flex items-center">
-                 <i className="fa-solid fa-crosshairs mr-1"></i> GPS Active
-               </span>
+              <span className="bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-widest border border-blue-200 dark:border-blue-800 flex items-center">
+                <i className="fa-solid fa-crosshairs mr-1"></i> GPS Active
+              </span>
             )}
           </div>
           <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white">
@@ -124,24 +124,24 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate, onSelectDetecti
           </h1>
           <p className="text-slate-500 dark:text-slate-400 text-sm flex items-center">
             <i className="fa-solid fa-location-dot mr-2"></i>
-            {profile?.location || 'Location not set'} • Ticket: {user.ticket_code}
+            {profile?.location || 'Location not set'} • {user.plan} Plan
           </p>
         </div>
         <div className="flex items-center space-x-3">
-           <div className="text-right hidden sm:block">
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">System Status</p>
-              <p className="text-sm font-bold text-emerald-500 flex items-center justify-end">
-                <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse mr-2"></span>
-                AI Active
-              </p>
-           </div>
-           <button 
-             onClick={() => onNavigate('detect')}
-             className="bg-emerald-600 text-white px-6 py-3 rounded-2xl font-bold hover:bg-emerald-700 shadow-xl shadow-emerald-200 dark:shadow-none transition-all flex items-center space-x-2"
-           >
-             <i className="fa-solid fa-plus-circle"></i>
-             <span>New Scan</span>
-           </button>
+          <div className="text-right hidden sm:block">
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">System Status</p>
+            <p className="text-sm font-bold text-emerald-500 flex items-center justify-end">
+              <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse mr-2"></span>
+              AI Active
+            </p>
+          </div>
+          <button
+            onClick={() => onNavigate('detect')}
+            className="bg-emerald-600 text-white px-6 py-3 rounded-2xl font-bold hover:bg-emerald-700 shadow-xl shadow-emerald-200 dark:shadow-none transition-all flex items-center space-x-2"
+          >
+            <i className="fa-solid fa-plus-circle"></i>
+            <span>New Scan</span>
+          </button>
         </div>
       </div>
 
@@ -152,7 +152,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate, onSelectDetecti
           { icon: 'fa-vial', label: 'Soil Health', color: 'amber', action: handleSoilHealthClick },
           { icon: 'fa-chart-line', label: 'Market', color: 'indigo', action: () => onNavigate('market') },
         ].map((item, idx) => (
-          <button 
+          <button
             key={idx}
             onClick={item.action}
             className="flex flex-col items-center justify-center p-4 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md hover:border-emerald-200 dark:hover:border-emerald-800 transition-all group"
@@ -167,24 +167,24 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate, onSelectDetecti
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">
-          
+
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm relative">
-               <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Lifetime Scans</p>
-               <h3 className="text-3xl font-black text-slate-900 dark:text-white">{totalDetections}</h3>
-               <p className="text-[10px] text-emerald-500 font-bold mt-2">
-                 <i className="fa-solid fa-arrow-up mr-1"></i> Active season
-               </p>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Lifetime Scans</p>
+              <h3 className="text-3xl font-black text-slate-900 dark:text-white">{totalDetections}</h3>
+              <p className="text-[10px] text-emerald-500 font-bold mt-2">
+                <i className="fa-solid fa-arrow-up mr-1"></i> Active season
+              </p>
             </div>
             <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm relative">
-               <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Severe Alerts</p>
-               <h3 className="text-3xl font-black text-rose-600 dark:text-rose-500">{severeCount}</h3>
-               <p className="text-[10px] text-slate-400 mt-2">Action required</p>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Severe Alerts</p>
+              <h3 className="text-3xl font-black text-rose-600 dark:text-rose-500">{severeCount}</h3>
+              <p className="text-[10px] text-slate-400 mt-2">Action required</p>
             </div>
             <div className="bg-emerald-600 p-6 rounded-3xl shadow-lg shadow-emerald-100 dark:shadow-none text-white relative">
-               <p className="text-xs font-bold text-emerald-100 uppercase tracking-widest mb-1">Top Focus</p>
-               <h3 className="text-3xl font-black">{topCrop}</h3>
-               <p className="text-[10px] text-emerald-100 mt-2">Most scanned variety</p>
+              <p className="text-xs font-bold text-emerald-100 uppercase tracking-widest mb-1">Top Focus</p>
+              <h3 className="text-3xl font-black">{topCrop}</h3>
+              <p className="text-[10px] text-emerald-100 mt-2">Most scanned variety</p>
             </div>
           </div>
 
@@ -202,7 +202,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate, onSelectDetecti
 
             {isWeatherLoading ? (
               <div className="grid grid-cols-5 gap-2 animate-pulse">
-                {[1,2,3,4,5].map(i => (
+                {[1, 2, 3, 4, 5].map(i => (
                   <div key={i} className="bg-slate-100 dark:bg-slate-700 h-24 rounded-2xl"></div>
                 ))}
               </div>
@@ -214,8 +214,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate, onSelectDetecti
                     <i className={`fa-solid ${getWeatherIcon(w.condition)} text-xl mb-2`}></i>
                     <span className="text-sm font-bold text-slate-900 dark:text-white">{w.temp}</span>
                     <div className="mt-3 w-full flex flex-col items-center">
-                       <div className={`h-1 w-full rounded-full ${w.risk_level === 'High' ? 'bg-rose-500' : w.risk_level === 'Med' ? 'bg-amber-500' : 'bg-emerald-500'}`}></div>
-                       <span className="text-[8px] font-bold mt-1 text-slate-400 uppercase">Risk: {w.risk_level}</span>
+                      <div className={`h-1 w-full rounded-full ${w.risk_level === 'High' ? 'bg-rose-500' : w.risk_level === 'Med' ? 'bg-amber-500' : 'bg-emerald-500'}`}></div>
+                      <span className="text-[8px] font-bold mt-1 text-slate-400 uppercase">Risk: {w.risk_level}</span>
                     </div>
                   </div>
                 ))}
@@ -260,9 +260,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate, onSelectDetecti
                         <p className="text-[10px] text-slate-500">{d.crop_type} • {new Date(d.created_at).toLocaleDateString()}</p>
                       </div>
                       <div className="text-right ml-2">
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold border ${
-                          d.severity_level === 'Severe' ? 'bg-red-50 text-red-600 border-red-100' : 'bg-green-50 text-green-600 border-green-100'
-                        }`}>
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold border ${d.severity_level === 'Severe' ? 'bg-red-50 text-red-600 border-red-100' : 'bg-green-50 text-green-600 border-green-100'
+                          }`}>
                           {d.severity_level}
                         </span>
                       </div>
@@ -277,7 +276,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate, onSelectDetecti
         </div>
 
         <div className="space-y-8">
-          
+
           <div className="bg-slate-900 text-white p-6 rounded-3xl shadow-xl overflow-hidden relative">
             <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 blur-3xl rounded-full"></div>
             <h3 className="text-lg font-bold mb-6 flex items-center relative">
@@ -299,35 +298,35 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate, onSelectDetecti
               ))}
             </div>
             <div className="mt-8 pt-6 border-t border-slate-800 text-center">
-               <p className="text-[10px] text-slate-500 italic">Based on anonymous regional data</p>
+              <p className="text-[10px] text-slate-500 italic">Based on anonymous regional data</p>
             </div>
           </div>
 
           <div className="p-1 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-3xl">
-             <div className="bg-white dark:bg-slate-800 p-6 rounded-[1.4rem]">
-                <div className="flex items-center space-x-2 mb-3">
-                   <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center text-emerald-600">
-                      <i className="fa-solid fa-lightbulb"></i>
-                   </div>
-                   <h4 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tighter italic">Agronomist Tip</h4>
+            <div className="bg-white dark:bg-slate-800 p-6 rounded-[1.4rem]">
+              <div className="flex items-center space-x-2 mb-3">
+                <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center text-emerald-600">
+                  <i className="fa-solid fa-lightbulb"></i>
                 </div>
-                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed italic">
-                  "Crop rotation with legumes after Tomato planting significantly reduces soil toxicity and pathogen build-up by breaking the host cycle."
-                </p>
-             </div>
+                <h4 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tighter italic">Agronomist Tip</h4>
+              </div>
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed italic">
+                "Crop rotation with legumes after Tomato planting significantly reduces soil toxicity and pathogen build-up by breaking the host cycle."
+              </p>
+            </div>
           </div>
 
           <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm">
-             <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4">Community Insights</h3>
-             <div className="flex -space-x-2 mb-4">
-                {[1,2,3,4].map(i => (
-                  <div key={i} className="w-8 h-8 rounded-full border-2 border-white dark:border-slate-800 bg-slate-200 overflow-hidden">
-                    <img src={`https://i.pravatar.cc/150?u=${i}`} alt="" />
-                  </div>
-                ))}
-                <div className="w-8 h-8 rounded-full border-2 border-white dark:border-slate-800 bg-emerald-100 text-emerald-600 flex items-center justify-center text-[10px] font-bold">+12</div>
-             </div>
-             <p className="text-[11px] text-slate-500 leading-relaxed">Farmers in your area are currently discussing <span className="font-bold text-slate-700 dark:text-slate-300">fertilizer subsidies</span> and early harvest techniques.</p>
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4">Community Insights</h3>
+            <div className="flex -space-x-2 mb-4">
+              {[1, 2, 3, 4].map(i => (
+                <div key={i} className="w-8 h-8 rounded-full border-2 border-white dark:border-slate-800 bg-slate-200 overflow-hidden">
+                  <img src={`https://i.pravatar.cc/150?u=${i}`} alt="" />
+                </div>
+              ))}
+              <div className="w-8 h-8 rounded-full border-2 border-white dark:border-slate-800 bg-emerald-100 text-emerald-600 flex items-center justify-center text-[10px] font-bold">+12</div>
+            </div>
+            <p className="text-[11px] text-slate-500 leading-relaxed">Farmers in your area are currently discussing <span className="font-bold text-slate-700 dark:text-slate-300">fertilizer subsidies</span> and early harvest techniques.</p>
           </div>
 
         </div>

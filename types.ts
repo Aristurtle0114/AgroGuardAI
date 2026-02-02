@@ -32,7 +32,10 @@ export interface DetectionResult {
 
 export interface User {
   id: string;
-  ticket_code: string;
+  name: string;
+  farm_name: string;
+  plan: 'Free' | 'Pro' | 'Enterprise';
+  subscription_status: 'active' | 'inactive';
 }
 
 export interface UserProfile {
