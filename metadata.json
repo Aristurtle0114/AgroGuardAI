@@ -1,0 +1,7 @@
+{
+  "name": "AgroGuard AI - Crop Disease Management",
+  "description": "An AI-powered crop disease detection system that helps farmers identify issues and manage treatments in real-time.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
