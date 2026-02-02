@@ -1,3 +1,4 @@
+
 export type CropType = 'Tomato' | 'Potato' | 'Corn' | 'Rice' | 'Unknown';
 
 export type SeverityLevel = 'Mild' | 'Moderate' | 'Severe';
@@ -38,6 +39,8 @@ export interface UserProfile {
   id: string;
   farm_name: string;
   location: string;
+  latitude?: number;
+  longitude?: number;
   farm_size_hectares: number;
   primary_crops: CropType[];
   profile_picture_url?: string;

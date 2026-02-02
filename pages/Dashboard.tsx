@@ -15,7 +15,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate, onSelectDetecti
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [weather, setWeather] = useState<WeatherDay[]>([]);
   const [weatherAlert, setWeatherAlert] = useState<string | null>(null);
+  const [weatherLinks, setWeatherLinks] = useState<{ title: string; uri: string }[]>([]);
   const [isWeatherLoading, setIsWeatherLoading] = useState(false);
+  const [showLocationPrompt, setShowLocationPrompt] = useState(false);
 
   useEffect(() => {
     const d = dataService.getDetections(user.id);
@@ -23,21 +25,31 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate, onSelectDetecti
     setDetections(d);
     setProfile(p);
 
-    if (p?.location) {
-      fetchWeather(p.location);
+    if (p?.location || (p?.latitude && p?.longitude)) {
+      fetchWeather(p.location || 'Current Location', p.latitude, p.longitude);
     }
   }, [user.id]);
 
-  const fetchWeather = async (location: string) => {
+  const fetchWeather = async (location: string, lat?: number, lng?: number) => {
     setIsWeatherLoading(true);
     try {
-      const data = await getWeatherForecast(location);
-      setWeather(data.forecast);
+      const data = await getWeatherForecast(location, lat, lng);
+      setWeather(data.forecast || []);
       setWeatherAlert(data.alert || null);
+      setWeatherLinks(data.links || []);
     } catch (err) {
       console.error("Weather Fetch Error:", err);
     } finally {
       setIsWeatherLoading(false);
+    }
+  };
+
+  const handleSoilHealthClick = () => {
+    if (profile?.latitude && profile?.longitude) {
+      onNavigate('chat');
+    } else {
+      setShowLocationPrompt(true);
+      setTimeout(() => setShowLocationPrompt(false), 5000);
     }
   };
 
@@ -63,14 +75,49 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate, onSelectDetecti
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-      {/* Header & Identity */}
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 relative">
+      
+      {showLocationPrompt && (
+        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[60] w-[90%] max-w-lg bg-white dark:bg-slate-800 border-2 border-amber-500 rounded-2xl shadow-2xl p-6 animate-bounce-short">
+          <div className="flex items-start space-x-4">
+             <div className="w-12 h-12 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center text-amber-600 shrink-0">
+                <i className="fa-solid fa-location-crosshairs text-xl"></i>
+             </div>
+             <div>
+                <h4 className="font-bold text-slate-900 dark:text-white">Pinpoint Location Required</h4>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                  To analyze the <strong>Soil Health</strong> of your land, please use the map to pinpoint your farm location in your profile settings.
+                </p>
+                <div className="mt-4 flex space-x-3">
+                  <button 
+                    onClick={() => onNavigate('profile')}
+                    className="bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-emerald-700 transition-all"
+                  >
+                    Go to Map
+                  </button>
+                  <button 
+                    onClick={() => setShowLocationPrompt(false)}
+                    className="text-slate-500 dark:text-slate-400 text-xs font-bold px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-all"
+                  >
+                    Dismiss
+                  </button>
+                </div>
+             </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <div className="flex items-center space-x-2 mb-1">
             <span className="bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-widest border border-emerald-200 dark:border-emerald-800">
               Verified Farmer
             </span>
+            {profile?.latitude && (
+               <span className="bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-widest border border-blue-200 dark:border-blue-800 flex items-center">
+                 <i className="fa-solid fa-crosshairs mr-1"></i> GPS Active
+               </span>
+            )}
           </div>
           <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white">
             {profile?.farm_name || 'My Farm Overview'}
@@ -98,13 +145,12 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate, onSelectDetecti
         </div>
       </div>
 
-      {/* Quick Actions Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
           { icon: 'fa-camera', label: 'Field Scan', color: 'emerald', action: () => onNavigate('detect') },
-          { icon: 'fa-file-medical', label: 'Treatments', color: 'blue', action: () => {} },
-          { icon: 'fa-vial', label: 'Soil Health', color: 'amber', action: () => {} },
-          { icon: 'fa-chart-line', label: 'Market', color: 'indigo', action: () => {} },
+          { icon: 'fa-robot', label: 'AgroAI', color: 'blue', action: () => onNavigate('chat') },
+          { icon: 'fa-vial', label: 'Soil Health', color: 'amber', action: handleSoilHealthClick },
+          { icon: 'fa-chart-line', label: 'Market', color: 'indigo', action: () => onNavigate('market') },
         ].map((item, idx) => (
           <button 
             key={idx}
@@ -122,7 +168,6 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate, onSelectDetecti
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">
           
-          {/* Main Analytics Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm relative">
                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Lifetime Scans</p>
@@ -143,10 +188,11 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate, onSelectDetecti
             </div>
           </div>
 
-          {/* Real-time Field Outlook */}
           <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white">Field Outlook: {profile?.location || 'Set Location'}</h3>
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                Field Outlook: {profile?.location || 'Set Location'}
+              </h3>
               {weatherAlert && (
                 <span className="text-[10px] font-bold text-rose-600 bg-rose-50 dark:bg-rose-900/30 px-2 py-1 rounded-full animate-pulse border border-rose-100 dark:border-rose-800">
                   <i className="fa-solid fa-triangle-exclamation mr-1"></i> {weatherAlert}
@@ -177,12 +223,25 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate, onSelectDetecti
             ) : (
               <div className="py-8 text-center bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700">
                 <i className="fa-solid fa-location-crosshairs text-slate-300 text-3xl mb-3"></i>
-                <p className="text-sm text-slate-500">Add a location in <button onClick={() => onNavigate('profile')} className="text-emerald-600 font-bold underline">Profile Settings</button> to see local weather.</p>
+                <p className="text-sm text-slate-500">Pinpoint your farm in <button onClick={() => onNavigate('profile')} className="text-emerald-600 font-bold underline">Profile Settings</button> to see hyper-local weather.</p>
+              </div>
+            )}
+
+            {!isWeatherLoading && weatherLinks.length > 0 && (
+              <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-700">
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Forecast Sources</p>
+                <div className="flex flex-wrap gap-2">
+                  {weatherLinks.map((link, idx) => (
+                    <a key={idx} href={link.uri} target="_blank" rel="noopener noreferrer" className="flex items-center space-x-1 px-3 py-1.5 bg-slate-50 dark:bg-slate-900 rounded-lg text-[10px] font-medium text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950 transition-colors border border-slate-100 dark:border-slate-800">
+                      <i className="fa-solid fa-link text-[8px]"></i>
+                      <span className="max-w-[120px] truncate">{link.title}</span>
+                    </a>
+                  ))}
+                </div>
               </div>
             )}
           </div>
 
-          {/* Recent History */}
           <div className="space-y-4">
             <div className="flex items-center justify-between px-2">
               <h3 className="text-lg font-bold text-slate-900 dark:text-white">Historical Logs</h3>
@@ -217,10 +276,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate, onSelectDetecti
           </div>
         </div>
 
-        {/* Right Column: Alerts & Tips */}
         <div className="space-y-8">
           
-          {/* Regional Alerts Feed */}
           <div className="bg-slate-900 text-white p-6 rounded-3xl shadow-xl overflow-hidden relative">
             <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 blur-3xl rounded-full"></div>
             <h3 className="text-lg font-bold mb-6 flex items-center relative">
@@ -246,7 +303,6 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate, onSelectDetecti
             </div>
           </div>
 
-          {/* Expert Tip Section */}
           <div className="p-1 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-3xl">
              <div className="bg-white dark:bg-slate-800 p-6 rounded-[1.4rem]">
                 <div className="flex items-center space-x-2 mb-3">
@@ -261,7 +317,6 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate, onSelectDetecti
              </div>
           </div>
 
-          {/* Community Insights */}
           <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm">
              <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4">Community Insights</h3>
              <div className="flex -space-x-2 mb-4">

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { User, DetectionResult, Theme } from './types';
 import { dataService } from './services/dataService';
@@ -7,6 +8,7 @@ import Dashboard from './pages/Dashboard';
 import DetectionPage from './pages/DetectionPage';
 import ProfilePage from './pages/ProfilePage';
 import ChatPage from './pages/ChatPage';
+import MarketPage from './pages/MarketPage';
 import DiseaseResult from './components/DiseaseResult';
 
 const App: React.FC = () => {
@@ -126,6 +128,8 @@ const App: React.FC = () => {
         return <ProfilePage user={user} />;
       case 'chat':
         return <ChatPage user={user} />;
+      case 'market':
+        return <MarketPage />;
       default:
         return <Dashboard user={user} onNavigate={setCurrentPage} onSelectDetection={() => {}} />;
     }

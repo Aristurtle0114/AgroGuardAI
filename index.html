@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -26,6 +27,13 @@
             font-weight: 500;
             color: #059669;
             font-size: 1.1rem;
+        }
+        @keyframes bounce-short {
+          0%, 100% { transform: translate(-50%, 0); }
+          50% { transform: translate(-50%, -10px); }
+        }
+        .animate-bounce-short {
+          animation: bounce-short 1s ease-in-out infinite;
         }
     </style>
     <script type="importmap">

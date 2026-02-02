@@ -21,8 +21,22 @@ export interface WeatherDay {
   risk_reason: string;
 }
 
+export interface WeatherForecastResponse {
+  forecast: WeatherDay[];
+  alert?: string;
+  links?: { title: string; uri: string }[];
+}
+
+export interface MarketPrice {
+  crop: string;
+  price: string;
+  unit: string;
+  trend: 'up' | 'down' | 'stable';
+  source_summary: string;
+}
+
 /**
- * Analyzes crop images using Gemini-3-flash-preview with multimodal input and search grounding.
+ * Analyzes crop images using Gemini-3-flash-preview with multimodal input.
  */
 export const analyzeCropImage = async (base64Image: string): Promise<AIDetectionResponse> => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -49,72 +63,132 @@ export const analyzeCropImage = async (base64Image: string): Promise<AIDetection
           possible_solutions: { type: Type.ARRAY, items: { type: Type.STRING } }
         },
         required: ["crop_type", "disease_name", "confidence_score", "severity_level", "description", "possible_solutions"]
-      },
-      tools: [{ googleSearch: {} }]
+      }
     }
   });
 
   const text = response.text || "{}";
   let parsed = JSON.parse(text);
 
+  return {
+    ...parsed,
+    crop_type: parsed.crop_type as CropType,
+    severity_level: parsed.severity_level as SeverityLevel,
+  };
+};
+
+/**
+ * Fetches real-time weather using Gemini Search and Maps grounding.
+ */
+export const getWeatherForecast = async (location: string, lat?: number, lng?: number): Promise<WeatherForecastResponse> => {
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  
+  const locationString = lat && lng ? `coordinates ${lat}, ${lng}` : location;
+  
+  const response = await ai.models.generateContent({
+    model: 'gemini-flash-latest', 
+    contents: `Get a real-time hyper-local 5-day weather forecast for ${locationString}. 
+    Focus on data critical for farming: humidity, precipitation, and extreme temps for these specific coordinates. 
+    Evaluate agronomic risk level (Low/Med/High) for each day (e.g., High humidity + moderate temp = High risk for fungal blight).
+    Return the data as a JSON block with the following structure:
+    {
+      "alert": "major regional warning or null",
+      "forecast": [
+        {"day": "MON", "temp": "28°", "condition": "Sunny", "risk_level": "Low", "risk_reason": "Clear skies"}
+      ]
+    }`,
+    config: {
+      tools: [{ googleSearch: {} }, { googleMaps: {} }],
+      toolConfig: {
+        retrievalConfig: {
+          latLng: lat && lng ? { latitude: lat, longitude: lng } : undefined
+        }
+      }
+    }
+  });
+
+  const text = response.text || "";
+  let parsed: any = { forecast: [] };
+  
+  try {
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      parsed = JSON.parse(jsonMatch[0]);
+    }
+  } catch (err) {
+    console.error("Weather JSON extraction failed:", err);
+  }
+
   const groundingLinks: { title: string; uri: string }[] = [];
   const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
   if (chunks) {
     chunks.forEach((chunk: any) => {
       if (chunk.web?.uri) {
-        groundingLinks.push({ title: chunk.web.title || "External Source", uri: chunk.web.uri });
+        groundingLinks.push({ title: chunk.web.title || "Weather Source", uri: chunk.web.uri });
+      }
+      if (chunk.maps?.uri) {
+        groundingLinks.push({ title: chunk.maps.title || "Location Reference", uri: chunk.maps.uri });
       }
     });
   }
 
   return {
     ...parsed,
-    crop_type: parsed.crop_type as CropType,
-    severity_level: parsed.severity_level as SeverityLevel,
-    grounding_links: groundingLinks
+    links: groundingLinks
   };
 };
 
 /**
- * Fetches real-time weather using Gemini Search grounding, focused on agricultural risk.
+ * Fetches current market prices for major Philippine crops using Google Search grounding.
  */
-export const getWeatherForecast = async (location: string): Promise<{ forecast: WeatherDay[], alert?: string }> => {
+export const getMarketPrices = async (): Promise<{ prices: MarketPrice[], links: { title: string, uri: string }[] }> => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
-    contents: `Get a real-time 5-day weather forecast for ${location}. Focus on data critical for farming: humidity, precipitation, and extreme temps. 
-    Evaluate agronomic risk level (Low/Med/High) for each day (e.g., High humidity + moderate temp = High risk for fungal blight).
-    Return as JSON.`,
+    contents: "Provide the current market prices (PHP) for famous crops in the Philippines: Palay (Rice), Corn (Yellow), Coconut (Copra), Sugarcane, Banana (Lakatan), Pineapple, and Mango. Include the price, unit (e.g., per kg), and a general trend.",
     config: {
       responseMimeType: "application/json",
       responseSchema: {
         type: Type.OBJECT,
         properties: {
-          alert: { type: Type.STRING, description: "Any major regional weather warning" },
-          forecast: {
+          prices: {
             type: Type.ARRAY,
             items: {
               type: Type.OBJECT,
               properties: {
-                day: { type: Type.STRING, description: "Short day name, e.g., MON" },
-                temp: { type: Type.STRING, description: "High temperature in Celsius, e.g., 28°" },
-                condition: { type: Type.STRING, description: "Single word weather condition" },
-                risk_level: { type: Type.STRING, description: "Low, Med, or High" },
-                risk_reason: { type: Type.STRING, description: "Short reason for the risk level" }
+                crop: { type: Type.STRING },
+                price: { type: Type.STRING },
+                unit: { type: Type.STRING },
+                trend: { type: Type.STRING, enum: ['up', 'down', 'stable'] },
+                source_summary: { type: Type.STRING }
               },
-              required: ["day", "temp", "condition", "risk_level", "risk_reason"]
+              required: ["crop", "price", "unit", "trend"]
             }
           }
         },
-        required: ["forecast"]
+        required: ["prices"]
       },
       tools: [{ googleSearch: {} }]
     }
   });
 
-  const parsed = JSON.parse(response.text || '{"forecast": []}');
-  return parsed;
+  const parsed = JSON.parse(response.text || '{"prices": []}');
+  
+  const groundingLinks: { title: string; uri: string }[] = [];
+  const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
+  if (chunks) {
+    chunks.forEach((chunk: any) => {
+      if (chunk.web?.uri) {
+        groundingLinks.push({ title: chunk.web.title || "Market Source", uri: chunk.web.uri });
+      }
+    });
+  }
+
+  return {
+    prices: parsed.prices,
+    links: groundingLinks
+  };
 };
 
 /**

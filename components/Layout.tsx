@@ -39,13 +39,13 @@ const Layout: React.FC<LayoutProps> = ({ children, user, theme, onLogout, onNavi
                   onClick={() => onNavigate('detect')}
                   className={`text-sm font-medium transition-colors ${currentPage === 'detect' ? 'text-emerald-600' : 'text-slate-600 dark:text-slate-300 hover:text-emerald-600'}`}
                 >
-                  New Detection
+                  Field Scan
                 </button>
                 <button 
                   onClick={() => onNavigate('chat')}
                   className={`text-sm font-medium transition-colors ${currentPage === 'chat' ? 'text-emerald-600' : 'text-slate-600 dark:text-slate-300 hover:text-emerald-600'}`}
                 >
-                  Chat Expert
+                  AgroAI
                 </button>
               </nav>
             )}
@@ -103,22 +103,22 @@ const Layout: React.FC<LayoutProps> = ({ children, user, theme, onLogout, onNavi
               onClick={() => onNavigate('detect')}
               className={`flex flex-col items-center space-y-1 ${currentPage === 'detect' ? 'text-emerald-600' : 'text-slate-400'}`}
             >
-              <i className="fa-solid fa-plus-circle text-xl"></i>
-              <span className="text-[10px]">Detect</span>
+              <i className="fa-solid fa-camera text-xl"></i>
+              <span className="text-[10px]">Field Scan</span>
             </button>
             <button 
               onClick={() => onNavigate('chat')}
               className={`flex flex-col items-center space-y-1 ${currentPage === 'chat' ? 'text-emerald-600' : 'text-slate-400'}`}
             >
-              <i className="fa-solid fa-comments"></i>
-              <span className="text-[10px]">Chat</span>
+              <i className="fa-solid fa-robot"></i>
+              <span className="text-[10px]">AgroAI</span>
             </button>
             <button 
               onClick={() => onNavigate('profile')}
               className={`flex flex-col items-center space-y-1 ${currentPage === 'profile' ? 'text-emerald-600' : 'text-slate-400'}`}
             >
-              <i className="fa-solid fa-user"></i>
-              <span className="text-[10px]">Profile</span>
+              <i className="fa-solid fa-location-dot"></i>
+              <span className="text-[10px]">Map</span>
             </button>
           </div>
         </div>
