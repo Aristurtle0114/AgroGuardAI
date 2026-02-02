@@ -56,7 +56,7 @@ export const analyzeCropImage = async (base64Image: string): Promise<AIDetection
     model: 'gemini-3-flash-preview',
     contents: {
       parts: [
-        { text: "Analyze this agricultural image for signs of crop disease. Provide a diagnosis in JSON format including: crop_type (Tomato, Potato, Corn, Rice, or Unknown), disease_name, scientific_name (if applicable), confidence_score (0-100), severity_level (Mild, Moderate, or Severe), a concise expert description, and 4 specific agronomic solutions." },
+        { text: "Analyze this agricultural image for signs of crop disease. Provide a diagnosis in JSON format including: crop_type (Tomato, Potato, Corn, Rice, or Unknown), disease_name, scientific_name (if applicable), confidence_score (0-100), severity_level (Mild, Moderate, or Severe), a concise expert description, 4 specific agronomic solutions, and an 'initial_ai_comment'. The 'initial_ai_comment' should be a formal, agentic 'Briefing' style message (like a forensic report). It should state the finding authoritative yet helpful. (e.g. 'Forensic audit report finalized. Identity verification: Early Blight detected. Immediate chemical intervention recommended. Awaiting your command to generate treatment protocol.'). Keep it under 30 words." },
         { inlineData: { mimeType: 'image/jpeg', data: base64Image } }
       ]
     },
@@ -71,7 +71,8 @@ export const analyzeCropImage = async (base64Image: string): Promise<AIDetection
           confidence_score: { type: Type.NUMBER },
           severity_level: { type: Type.STRING },
           description: { type: Type.STRING },
-          possible_solutions: { type: Type.ARRAY, items: { type: Type.STRING } }
+          possible_solutions: { type: Type.ARRAY, items: { type: Type.STRING } },
+          initial_ai_comment: { type: Type.STRING }
         },
         required: ["crop_type", "disease_name", "confidence_score", "severity_level", "description", "possible_solutions"]
       }
@@ -232,4 +233,22 @@ export const chatWithExpert = async (history: ChatMessage[], message: string) =>
     text: response.text || "Connection error.",
     links: groundingLinks
   };
+};
+
+/**
+ * Generates a proactive follow-up message based on a scan result.
+ * Used if the initial scan didn't generate one or to refresh the context.
+ */
+export const generatePostScanInsight = async (result: any) => {
+  const ai = getGenAI();
+  const prompt = `I just analyzed a crop. Result: ${result.disease_name} on ${result.crop_type} (${result.severity_level} severity).
+  Generate a short, formal, agentic "Briefing" style message. NOT a diagnosis.
+  Example: "Intelligence Scan complete. Subject identified as severe Bacterial Wilt. Recommended Action: Isolation protocol. Shall I access the treatment database?"
+  keep it under 30 words.`;
+
+  const response = await ai.models.generateContent({
+    model: 'gemini-3-flash-preview',
+    contents: prompt
+  });
+  return response.text || "How can I help you with this diagnosis?";
 };

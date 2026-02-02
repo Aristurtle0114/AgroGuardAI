@@ -5,6 +5,7 @@ import { SUPPORTED_DISEASES } from '../constants';
 interface DiseaseResultProps {
   detection: DetectionResult;
   onAnalyzeMore: () => void;
+  onChatStart: (context: string) => void;
 }
 
 const SeverityBadge: React.FC<{ level: SeverityLevel }> = ({ level }) => {
@@ -20,11 +21,11 @@ const SeverityBadge: React.FC<{ level: SeverityLevel }> = ({ level }) => {
   );
 };
 
-const DiseaseResult: React.FC<DiseaseResultProps> = ({ detection, onAnalyzeMore }) => {
+const DiseaseResult: React.FC<DiseaseResultProps> = ({ detection, onAnalyzeMore, onChatStart }) => {
   const diseaseInfo = SUPPORTED_DISEASES.find(
     d => d.common_name === detection.disease_name && d.crop_type === detection.crop_type
   );
-  
+
   return (
     <div className="max-w-4xl mx-auto py-8 px-4">
       <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl overflow-hidden border border-slate-200 dark:border-slate-700">
@@ -53,7 +54,7 @@ const DiseaseResult: React.FC<DiseaseResultProps> = ({ detection, onAnalyzeMore 
             <div className="aspect-video rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-900 shadow-inner">
               <img src={detection.image_url} alt="Uploaded crop" className="w-full h-full object-cover" />
             </div>
-            
+
             {detection.grounding_links && detection.grounding_links.length > 0 && (
               <div className="mt-8">
                 <h4 className="text-sm font-bold text-slate-900 dark:text-white mb-3 flex items-center">
@@ -107,7 +108,59 @@ const DiseaseResult: React.FC<DiseaseResultProps> = ({ detection, onAnalyzeMore 
           </div>
         </div>
 
-        <div className="p-6 bg-slate-900 dark:bg-slate-950 flex justify-between items-center">
+        {/* Intelligence Console (Agentic UI) */}
+        {detection.initial_ai_comment && (
+          <div className="mb-8 mx-0 md:mx-6 bg-[#0f172a] rounded-3xl overflow-hidden shadow-2xl border border-slate-700 animate-slide-up">
+            {/* Console Header */}
+            <div className="bg-[#1e293b] px-6 py-4 flex items-center justify-between border-b border-slate-700">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white">
+                  <i className="fa-solid fa-bolt text-sm"></i>
+                </div>
+                <div>
+                  <p className="text-[10px] text-blue-400 font-bold tracking-widest uppercase mb-0.5">AGENT 01</p>
+                  <h3 className="text-sm font-bold text-slate-200 tracking-wide">INTELLIGENCE CONSOLE</h3>
+                </div>
+              </div>
+              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+            </div>
+
+            {/* Console Body */}
+            <div className="p-6 md:p-8 font-mono">
+              <div className="mb-6 space-y-1 text-xs md:text-sm text-slate-400 border-l-2 border-blue-900/50 pl-4 py-1">
+                <p>ELITE AGRONOMIC AUDIT BRIEFING</p>
+                <p>AGENT ID: AGRO-9</p>
+                <p>SUBJECT: <span className="text-white font-bold uppercase">{detection.crop_type}</span></p>
+                <p>STATUS: <span className="text-emerald-400 font-bold uppercase">{detection.severity_level} {detection.disease_name}</span></p>
+              </div>
+
+              <div className="text-slate-300 leading-relaxed text-sm md:text-base">
+                {detection.initial_ai_comment}
+              </div>
+            </div>
+
+            {/* Console Input */}
+            <div className="p-4 bg-[#0f172a] border-t border-slate-800">
+              <div className="relative">
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  onChatStart(`Diagnostics: ${detection.disease_name} on ${detection.crop_type}. Severity: ${detection.severity_level}.`);
+                }}>
+                  <input
+                    type="text"
+                    placeholder="Query agronomic database... (Press Enter)"
+                    className="w-full bg-[#1e293b] text-slate-400 text-sm rounded-xl py-4 pl-5 pr-20 border border-slate-700 focus:outline-none focus:border-blue-500 focus:text-white transition-colors"
+                  />
+                  <button type="submit" className="absolute right-2 top-2 bottom-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-4 rounded-lg transition-colors tracking-wide">
+                    SEND
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="p-6 bg-slate-900 dark:bg-slate-950 flex justify-between items-center text-center md:text-left">
           <p className="text-slate-400 text-[10px] italic max-w-xs">
             Recommendations are AI-generated based on image analysis. Consult with local agricultural extensions before large-scale chemical application.
           </p>

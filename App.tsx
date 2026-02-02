@@ -17,6 +17,7 @@ const App: React.FC = () => {
   const [theme, setTheme] = useState<Theme>(dataService.getTheme());
   const [currentPage, setCurrentPage] = useState<string>('landing');
   const [selectedDetection, setSelectedDetection] = useState<DetectionResult | null>(null);
+  const [chatContext, setChatContext] = useState<string | undefined>(undefined);
   const [ticketInput, setTicketInput] = useState('');
 
   useEffect(() => {
@@ -85,12 +86,16 @@ const App: React.FC = () => {
           <DiseaseResult
             detection={selectedDetection}
             onAnalyzeMore={() => setCurrentPage('detect')}
+            onChatStart={(context) => {
+              setChatContext(context);
+              setCurrentPage('chat');
+            }}
           />
         ) : null;
       case 'profile':
         return <ProfilePage user={user} />;
       case 'chat':
-        return <ChatPage user={user} />;
+        return <ChatPage user={user} initialContext={chatContext} />;
       case 'market':
         return <MarketPage />;
       default:

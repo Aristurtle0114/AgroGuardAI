@@ -2,10 +2,25 @@ import React, { useState, useRef, useEffect } from 'react';
 import { User, ChatMessage } from '../types';
 import { chatWithExpert } from '../services/geminiService';
 
-const ChatPage: React.FC<{ user: User }> = ({ user }) => {
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    { role: 'model', parts: [{ text: "Hello! I'm your AgroGuard AI assistant. How can I help your farm today?" }] }
-  ]);
+const ChatPage: React.FC<{ user: User; initialContext?: string }> = ({ user, initialContext }) => {
+  const [messages, setMessages] = useState<ChatMessage[]>(() => {
+    const initialMsgs: ChatMessage[] = [
+      { role: 'model', parts: [{ text: "Hello! I'm your AgroGuard AI assistant. How can I help your farm today?" }] }
+    ];
+
+    // Inject system context if available
+    if (initialContext) {
+      initialMsgs.unshift({
+        role: 'user', // Hidden context message
+        parts: [{ text: `[SYSTEM CONTEXT: ${initialContext}]` }]
+      });
+      initialMsgs.push({
+        role: 'model',
+        parts: [{ text: "I see the scan results. I'm ready to discuss the diagnosis. What specific questions do you have?" }]
+      });
+    }
+    return initialMsgs;
+  });
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -24,34 +39,34 @@ const ChatPage: React.FC<{ user: User }> = ({ user }) => {
     setInput('');
     const userMsgObj: ChatMessage = { role: 'user', parts: [{ text: userMessage }] };
     const historyBeforeResponse = [...messages, userMsgObj];
-    
+
     setMessages(historyBeforeResponse);
     setIsLoading(true);
 
     try {
       const response = await chatWithExpert(messages, userMessage);
-      
-      const aiMsgObj: ChatMessage = { 
-        role: 'model', 
+
+      const aiMsgObj: ChatMessage = {
+        role: 'model',
         parts: [{ text: response.text }],
         links: response.links
       };
-      
+
       setMessages(prev => [...prev, aiMsgObj]);
     } catch (error: any) {
       console.error("Chat Execution Error:", error);
-      
+
       let errorDisplay = "Expert connection error. Please check your internet and try again.";
-      
+
       if (error.message === "RESELECT_KEY") {
         errorDisplay = "Agricultural Database Access Denied. Your session credentials may have expired. Please try refreshing or reconnecting your API project.";
       } else if (error?.message) {
         errorDisplay = `AI Diagnostic Error: ${error.message}`;
       }
-        
-      setMessages(prev => [...prev, { 
-        role: 'model', 
-        parts: [{ text: errorDisplay }] 
+
+      setMessages(prev => [...prev, {
+        role: 'model',
+        parts: [{ text: errorDisplay }]
       }]);
     } finally {
       setIsLoading(false);
@@ -75,22 +90,21 @@ const ChatPage: React.FC<{ user: User }> = ({ user }) => {
       <div ref={scrollRef} className="flex-grow overflow-y-auto p-4 space-y-6 scroll-smooth">
         {messages.map((m, idx) => (
           <div key={idx} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-[85%] p-4 rounded-2xl ${
-              m.role === 'user' 
-                ? 'bg-emerald-600 text-white rounded-br-none shadow-md' 
+            <div className={`max-w-[85%] p-4 rounded-2xl ${m.role === 'user'
+                ? 'bg-emerald-600 text-white rounded-br-none shadow-md'
                 : 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-bl-none border border-slate-200 dark:border-slate-700'
-            }`}>
+              }`}>
               <p className="text-sm leading-relaxed whitespace-pre-wrap">{m.parts[0].text}</p>
-              
+
               {m.links && m.links.length > 0 && (
                 <div className="mt-4 pt-3 border-t border-slate-200 dark:border-slate-700">
                   <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2">Sources & References:</p>
                   <div className="flex flex-wrap gap-2">
                     {m.links.map((link, lIdx) => (
-                      <a 
-                        key={lIdx} 
-                        href={link.uri} 
-                        target="_blank" 
+                      <a
+                        key={lIdx}
+                        href={link.uri}
+                        target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center space-x-1 px-2 py-1 bg-white/50 dark:bg-slate-900/50 rounded-md text-[10px] font-medium text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors border border-emerald-100 dark:border-emerald-900/50"
                       >
@@ -117,8 +131,8 @@ const ChatPage: React.FC<{ user: User }> = ({ user }) => {
 
       <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
         <form onSubmit={handleSend} className="flex space-x-3">
-          <input 
-            type="text" 
+          <input
+            type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask about treatment, weather, or crop health..."

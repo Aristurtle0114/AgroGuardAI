@@ -28,6 +28,7 @@ export interface DetectionResult {
   created_at: string;
   possible_solutions?: string[];
   grounding_links?: { title: string; uri: string }[];
+  initial_ai_comment?: string;
 }
 
 export interface User {
