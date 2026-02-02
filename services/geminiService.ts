@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { CropType, SeverityLevel, ChatMessage } from '../types';
+import { CropType, SeverityLevel, ChatMessage } from '../types.ts';
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
 
