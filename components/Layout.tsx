@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { User, Theme } from '../types';
 
@@ -64,6 +65,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, theme, onLogout, onNavi
                   <span className="hidden sm:inline text-xs font-mono px-2 py-1 bg-slate-100 dark:bg-slate-700 rounded text-slate-500 dark:text-slate-400">
                     ID: {user.ticket_code}
                   </span>
+                  {/* Fixed: Use onLogout instead of undefined handleLogout */}
                   <button 
                     onClick={onLogout}
                     className="p-2 text-slate-400 hover:text-rose-600 transition-colors"
@@ -77,7 +79,7 @@ const Layout: React.FC<LayoutProps> = ({ children, user, theme, onLogout, onNavi
                   onClick={() => onNavigate('ticket')}
                   className="bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-emerald-700 transition-colors shadow-sm"
                 >
-                  Access Ticket
+                  Digital Login
                 </button>
               )}
             </div>
