@@ -1,7 +1,6 @@
-
 import React from 'react';
-import { DetectionResult, SeverityLevel } from '../types.ts';
-import { SUPPORTED_DISEASES, MOCK_TREATMENTS } from '../constants.tsx';
+import { DetectionResult, SeverityLevel } from '../types';
+import { SUPPORTED_DISEASES, MOCK_TREATMENTS } from '../constants';
 
 interface DiseaseResultProps {
   detection: DetectionResult;

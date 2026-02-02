@@ -1,7 +1,6 @@
-
 import React from 'react';
-import { User, DetectionResult, UserProfile } from '../types.ts';
-import { dataService } from '../services/dataService.ts';
+import { User, DetectionResult, UserProfile } from '../types';
+import { dataService } from '../services/dataService';
 
 interface DashboardProps {
   user: User;

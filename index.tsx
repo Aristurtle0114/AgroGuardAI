@@ -1,28 +1,22 @@
 import React from 'react';
-import ReactDOM from 'react-dom/client';
+import { createRoot } from 'react-dom/client';
 import App from './App';
 
-const initApp = () => {
-  const rootElement = document.getElementById('root');
-  if (rootElement) {
-    try {
-      const root = ReactDOM.createRoot(rootElement);
-      root.render(
-        <React.StrictMode>
-          <App />
-        </React.StrictMode>
-      );
-    } catch (err) {
-      console.error("Critical: Failed to render React app:", err);
-    }
-  } else {
-    console.error("Critical: Root element '#root' not found.");
-  }
-};
+console.log("AgroGuard AI: App entry point executing...");
 
-// Ensure the DOM is fully loaded before mounting
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initApp);
+const container = document.getElementById('root');
+if (container) {
+  try {
+    const root = createRoot(container);
+    root.render(
+      <React.StrictMode>
+        <App />
+      </React.StrictMode>
+    );
+    console.log("AgroGuard AI: Root render triggered.");
+  } catch (error) {
+    console.error("AgroGuard AI: Failed to render app:", error);
+  }
 } else {
-  initApp();
+  console.error("AgroGuard AI: Critical: Could not find root element.");
 }

@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { User, Theme } from '../types.ts';
+import { User, Theme } from '../types';
 
 interface LayoutProps {
   children: React.ReactNode;

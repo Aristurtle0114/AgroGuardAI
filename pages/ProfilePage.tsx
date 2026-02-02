@@ -1,7 +1,6 @@
-
 import React from 'react';
-import { User, UserProfile, CropType } from '../types.ts';
-import { dataService } from '../services/dataService.ts';
+import { User, UserProfile, CropType } from '../types';
+import { dataService } from '../services/dataService';
 
 const ProfilePage: React.FC<{ user: User }> = ({ user }) => {
   const [profile, setProfile] = React.useState<UserProfile>({

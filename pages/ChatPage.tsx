@@ -1,7 +1,6 @@
-
 import React, { useState, useRef, useEffect } from 'react';
-import { User, ChatMessage } from '../types.ts';
-import { chatWithExpert } from '../services/geminiService.ts';
+import { User, ChatMessage } from '../types';
+import { chatWithExpert } from '../services/geminiService';
 
 const ChatPage: React.FC<{ user: User }> = ({ user }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([

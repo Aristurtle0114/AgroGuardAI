@@ -1,8 +1,7 @@
-
 import React from 'react';
-import { analyzeCropImage } from '../services/geminiService.ts';
-import { dataService } from '../services/dataService.ts';
-import { User, DetectionResult } from '../types.ts';
+import { analyzeCropImage } from '../services/geminiService';
+import { dataService } from '../services/dataService';
+import { User, DetectionResult } from '../types';
 
 interface DetectionPageProps {
   user: User;
