@@ -25,6 +25,7 @@ export interface DetectionResult {
   severity_level: SeverityLevel;
   image_url: string;
   created_at: string;
+  possible_solutions?: string[];
   grounding_links?: { title: string; uri: string }[];
 }
 

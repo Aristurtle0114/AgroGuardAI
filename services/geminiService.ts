@@ -8,6 +8,7 @@ export interface AIDetectionResponse {
   severity_level: SeverityLevel;
   scientific_name?: string;
   description: string;
+  possible_solutions: string[];
   grounding_links?: { title: string; uri: string }[];
 }
 
@@ -38,7 +39,7 @@ export const analyzeCropImage = async (base64Image: string): Promise<AIDetection
             },
           },
           {
-            text: `Analyze this crop image for potential diseases. Identify the crop type and specific disease. Provide output in JSON format.`,
+            text: `Analyze this crop image for potential diseases. Identify the crop type, specific disease, and provide 3-5 actionable treatment or prevention steps. Provide output in JSON format.`,
           },
         ],
       },
@@ -53,8 +54,13 @@ export const analyzeCropImage = async (base64Image: string): Promise<AIDetection
             confidence_score: { type: Type.NUMBER },
             severity_level: { type: Type.STRING },
             description: { type: Type.STRING },
+            possible_solutions: { 
+              type: Type.ARRAY,
+              items: { type: Type.STRING },
+              description: "Actionable steps to treat or prevent the identified disease."
+            },
           },
-          required: ["crop_type", "disease_name", "confidence_score", "severity_level", "description"],
+          required: ["crop_type", "disease_name", "confidence_score", "severity_level", "description", "possible_solutions"],
         },
       },
     });

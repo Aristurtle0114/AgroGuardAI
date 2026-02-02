@@ -48,7 +48,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate, onSelectDetecti
         </button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
         <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
           <div className="flex items-center justify-between mb-2">
             <span className="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider">Total Scans</span>
@@ -77,16 +77,6 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate, onSelectDetecti
             </div>
           </div>
           <span className="text-3xl font-extrabold text-slate-900 dark:text-white">{topCrop}</span>
-        </div>
-
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider">Recovery</span>
-            <div className="w-8 h-8 bg-amber-50 dark:bg-amber-900/30 rounded-lg flex items-center justify-center text-amber-600 dark:text-amber-400">
-              <i className="fa-solid fa-heart-pulse"></i>
-            </div>
-          </div>
-          <span className="text-3xl font-extrabold text-slate-900 dark:text-white">84%</span>
         </div>
       </div>
 

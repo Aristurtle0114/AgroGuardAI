@@ -45,6 +45,7 @@ const DetectionPage: React.FC<DetectionPageProps> = ({ user, onDetectionComplete
         confidence_score: result.confidence_score,
         severity_level: result.severity_level,
         image_url: preview,
+        possible_solutions: result.possible_solutions,
         grounding_links: result.grounding_links,
       });
 
