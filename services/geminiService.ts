@@ -1,6 +1,6 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
-import { CropType, SeverityLevel, ChatMessage } from '../types';
+import { CropType, SeverityLevel, ChatMessage } from '../types.ts';
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
@@ -17,7 +17,6 @@ export interface AIDetectionResponse {
 export const analyzeCropImage = async (base64Image: string): Promise<AIDetectionResponse> => {
   const model = 'gemini-3-flash-preview';
 
-  // Analyze the image first
   const response = await ai.models.generateContent({
     model,
     contents: {
@@ -29,9 +28,7 @@ export const analyzeCropImage = async (base64Image: string): Promise<AIDetection
           },
         },
         {
-          text: `Analyze this crop image for potential diseases. Identify the crop type (Tomato, Potato, Corn, Rice, or Unknown) and the specific disease. 
-          
-          Provide the output in JSON format with the following schema.`,
+          text: `Analyze this crop image for potential diseases. Identify the crop type (Tomato, Potato, Corn, Rice, or Unknown) and the specific disease. Provide output in JSON.`,
         },
       ],
     },
@@ -40,12 +37,12 @@ export const analyzeCropImage = async (base64Image: string): Promise<AIDetection
       responseSchema: {
         type: Type.OBJECT,
         properties: {
-          crop_type: { type: Type.STRING, description: "Tomato, Potato, Corn, Rice, or Unknown" },
-          disease_name: { type: Type.STRING, description: "Common name of the disease or 'Healthy'" },
-          scientific_name: { type: Type.STRING, description: "Scientific name of the pathogen" },
-          confidence_score: { type: Type.NUMBER, description: "Confidence score from 0 to 100" },
-          severity_level: { type: Type.STRING, description: "Mild, Moderate, or Severe" },
-          description: { type: Type.STRING, description: "Short summary of detection" },
+          crop_type: { type: Type.STRING },
+          disease_name: { type: Type.STRING },
+          scientific_name: { type: Type.STRING },
+          confidence_score: { type: Type.NUMBER },
+          severity_level: { type: Type.STRING },
+          description: { type: Type.STRING },
         },
         required: ["crop_type", "disease_name", "confidence_score", "severity_level", "description"],
       },
@@ -54,14 +51,11 @@ export const analyzeCropImage = async (base64Image: string): Promise<AIDetection
 
   const data = JSON.parse(response.text || '{}');
 
-  // If it's a disease, fetch latest treatment news via Google Search
   if (data.disease_name !== 'Healthy') {
     const searchResponse = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
-      contents: `Find the latest 2024/2025 treatment protocols and product availability for ${data.disease_name} in ${data.crop_type} crops.`,
-      config: {
-        tools: [{ googleSearch: {} }],
-      },
+      contents: `Latest treatment protocols for ${data.disease_name} in ${data.crop_type} crops.`,
+      config: { tools: [{ googleSearch: {} }] },
     });
 
     const chunks = searchResponse.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
@@ -81,18 +75,13 @@ export const chatWithExpert = async (history: ChatMessage[], message: string) =>
   const chat = ai.chats.create({
     model: 'gemini-3-flash-preview',
     config: {
-      systemInstruction: 'You are an expert Agronomist AI. Provide practical, sustainable, and scientifically accurate advice to farmers. Use Google Search to find latest pest alerts or treatment prices if relevant.',
+      systemInstruction: 'Expert Agronomist AI assistance.',
       tools: [{ googleSearch: {} }],
     },
   });
-
-  // Since we aren't maintaining stateful server-side chats here, we pass the full history
-  // In a real app, you'd use the chat object continuously.
   const response = await chat.sendMessage({ message });
-  
-  const text = response.text || "I'm sorry, I couldn't process that request.";
+  const text = response.text || "I'm sorry, I couldn't process that.";
   const grounding = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
   const links = grounding.filter(c => c.web).map(c => ({ title: c.web?.title, uri: c.web?.uri }));
-
   return { text, links };
 };

@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { User, ChatMessage } from '../types';
-import { chatWithExpert } from '../services/geminiService';
+import { User, ChatMessage } from '../types.ts';
+import { chatWithExpert } from '../services/geminiService.ts';
 
 const ChatPage: React.FC<{ user: User }> = ({ user }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -31,7 +31,7 @@ const ChatPage: React.FC<{ user: User }> = ({ user }) => {
       const response = await chatWithExpert(messages, userMessage);
       setMessages(prev => [...prev, { role: 'model', parts: [{ text: response.text }] }]);
     } catch (error) {
-      setMessages(prev => [...prev, { role: 'model', parts: [{ text: "I'm having trouble connecting to the experts. Please try again later." }] }]);
+      setMessages(prev => [...prev, { role: 'model', parts: [{ text: "Expert connection error. Please try again." }] }]);
     } finally {
       setIsLoading(false);
     }
@@ -56,7 +56,7 @@ const ChatPage: React.FC<{ user: User }> = ({ user }) => {
           <div key={idx} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             <div className={`max-w-[85%] p-4 rounded-2xl ${
               m.role === 'user' 
-                ? 'bg-emerald-600 text-white rounded-br-none shadow-md shadow-emerald-500/10' 
+                ? 'bg-emerald-600 text-white rounded-br-none shadow-md' 
                 : 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-bl-none border border-slate-200 dark:border-slate-700'
             }`}>
               <p className="text-sm leading-relaxed whitespace-pre-wrap">{m.parts[0].text}</p>
@@ -83,11 +83,7 @@ const ChatPage: React.FC<{ user: User }> = ({ user }) => {
             placeholder="Ask about treatment, weather, or crop health..."
             className="flex-grow px-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none shadow-sm dark:text-white transition-all"
           />
-          <button 
-            type="submit"
-            disabled={!input.trim() || isLoading}
-            className="bg-emerald-600 text-white w-12 h-12 rounded-xl flex items-center justify-center hover:bg-emerald-700 disabled:opacity-50 shadow-md transition-all"
-          >
+          <button type="submit" disabled={!input.trim() || isLoading} className="bg-emerald-600 text-white w-12 h-12 rounded-xl flex items-center justify-center hover:bg-emerald-700 transition-all">
             <i className="fa-solid fa-paper-plane"></i>
           </button>
         </form>

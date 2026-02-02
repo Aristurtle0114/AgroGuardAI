@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { User, DetectionResult, UserProfile } from '../types';
-import { dataService } from '../services/dataService';
+import { User, DetectionResult, UserProfile } from '../types.ts';
+import { dataService } from '../services/dataService.ts';
 
 interface DashboardProps {
   user: User;
@@ -49,7 +49,6 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate, onSelectDetecti
         </button>
       </div>
 
-      {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
         <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
           <div className="flex items-center justify-between mb-2">
@@ -92,7 +91,6 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onNavigate, onSelectDetecti
         </div>
       </div>
 
-      {/* Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2">
           <div className="flex items-center justify-between mb-6">

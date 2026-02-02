@@ -1,7 +1,7 @@
 
 import React from 'react';
-import { DetectionResult, SeverityLevel } from '../types';
-import { SUPPORTED_DISEASES, MOCK_TREATMENTS } from '../constants';
+import { DetectionResult, SeverityLevel } from '../types.ts';
+import { SUPPORTED_DISEASES, MOCK_TREATMENTS } from '../constants.tsx';
 
 interface DiseaseResultProps {
   detection: DetectionResult;
@@ -69,13 +69,7 @@ const DiseaseResult: React.FC<DiseaseResultProps> = ({ detection, onAnalyzeMore 
                 </h4>
                 <div className="space-y-2">
                   {detection.grounding_links.map((link, idx) => (
-                    <a 
-                      key={idx} 
-                      href={link.uri} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="block p-3 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-100 dark:border-slate-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 hover:border-emerald-100 dark:hover:border-emerald-800 transition-colors text-xs font-medium text-emerald-700 dark:text-emerald-400 flex items-center justify-between"
-                    >
+                    <a key={idx} href={link.uri} target="_blank" rel="noopener noreferrer" className="block p-3 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-100 dark:border-slate-700 transition-colors text-xs font-medium text-emerald-700 dark:text-emerald-400 flex items-center justify-between">
                       <span className="truncate mr-2">{link.title}</span>
                       <i className="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
                     </a>
@@ -89,23 +83,11 @@ const DiseaseResult: React.FC<DiseaseResultProps> = ({ detection, onAnalyzeMore 
             <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center">
               <i className="fa-solid fa-list-check text-emerald-600 dark:text-emerald-400 mr-2"></i> Key Symptoms
             </h3>
-            <ul className="space-y-3 mb-8">
-              {(diseaseInfo?.symptoms || ['General leaf discoloration', 'Stunted growth', 'Spots on foliage']).map((s, idx) => (
+            <ul className="space-y-3">
+              {(diseaseInfo?.symptoms || ['Discoloration', 'Spots']).map((s, idx) => (
                 <li key={idx} className="flex items-start text-sm text-slate-600 dark:text-slate-400">
                   <i className="fa-solid fa-circle-check text-emerald-500 dark:text-emerald-400 mt-1 mr-3"></i>
                   {s}
-                </li>
-              ))}
-            </ul>
-
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center">
-              <i className="fa-solid fa-shield-virus text-emerald-600 dark:text-emerald-400 mr-2"></i> Prevention
-            </h3>
-            <ul className="space-y-3">
-              {(diseaseInfo?.prevention_tips || ['Avoid overwatering', 'Ensure proper sanitation']).map((p, idx) => (
-                <li key={idx} className="flex items-start text-sm text-slate-600 dark:text-slate-400">
-                  <i className="fa-solid fa-lightbulb text-amber-500 dark:text-amber-400 mt-1 mr-3"></i>
-                  {p}
                 </li>
               ))}
             </ul>
@@ -113,10 +95,7 @@ const DiseaseResult: React.FC<DiseaseResultProps> = ({ detection, onAnalyzeMore 
         </div>
 
         <div className="p-6 bg-slate-900 dark:bg-slate-950 flex justify-between items-center">
-          <button 
-            onClick={onAnalyzeMore}
-            className="text-white bg-slate-800 dark:bg-slate-800 px-6 py-2 rounded-lg font-semibold hover:bg-slate-700 dark:hover:bg-slate-700 transition-colors"
-          >
+          <button onClick={onAnalyzeMore} className="text-white bg-slate-800 px-6 py-2 rounded-lg font-semibold transition-colors">
             New Analysis
           </button>
         </div>

@@ -1,14 +1,14 @@
 
 import React, { useState, useEffect } from 'react';
-import { User, DetectionResult, Theme } from './types';
-import { dataService } from './services/dataService';
-import Layout from './components/Layout';
-import LandingPage from './pages/LandingPage';
-import Dashboard from './pages/Dashboard';
-import DetectionPage from './pages/DetectionPage';
-import ProfilePage from './pages/ProfilePage';
-import ChatPage from './pages/ChatPage';
-import DiseaseResult from './components/DiseaseResult';
+import { User, DetectionResult, Theme } from './types.ts';
+import { dataService } from './services/dataService.ts';
+import Layout from './components/Layout.tsx';
+import LandingPage from './pages/LandingPage.tsx';
+import Dashboard from './pages/Dashboard.tsx';
+import DetectionPage from './pages/DetectionPage.tsx';
+import ProfilePage from './pages/ProfilePage.tsx';
+import ChatPage from './pages/ChatPage.tsx';
+import DiseaseResult from './components/DiseaseResult.tsx';
 
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -36,10 +36,9 @@ const App: React.FC = () => {
     }
   };
 
-  // Sync initial theme
   useEffect(() => {
     if (theme === 'dark') document.documentElement.classList.add('dark');
-  }, []);
+  }, [theme]);
 
   const handleLogout = () => {
     dataService.logout();
