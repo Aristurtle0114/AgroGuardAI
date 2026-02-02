@@ -1,3 +1,5 @@
+
+import { GoogleGenAI, Type } from "@google/genai";
 import { CropType, SeverityLevel, ChatMessage } from '../types';
 
 export interface AIDetectionResponse {
@@ -11,68 +13,138 @@ export interface AIDetectionResponse {
   grounding_links?: { title: string; uri: string }[];
 }
 
+export interface WeatherDay {
+  day: string;
+  temp: string;
+  condition: string;
+  risk_level: 'Low' | 'Med' | 'High';
+  risk_reason: string;
+}
+
 /**
- * Simulated crop analysis for demo mode.
- * Returns a random mock result after a realistic delay.
+ * Analyzes crop images using Gemini-3-flash-preview with multimodal input and search grounding.
  */
 export const analyzeCropImage = async (base64Image: string): Promise<AIDetectionResponse> => {
-  // Simulate network/processing delay
-  await new Promise(resolve => setTimeout(resolve, 2500));
-
-  const mockResults: AIDetectionResponse[] = [
-    {
-      crop_type: 'Tomato',
-      disease_name: 'Early Blight',
-      scientific_name: 'Alternaria solani',
-      confidence_score: 94.2,
-      severity_level: 'Moderate',
-      description: 'The image shows characteristic "target" spots with concentric rings on the lower leaves, typical of Early Blight fungal infection.',
-      possible_solutions: [
-        'Apply copper-based fungicides immediately to prevent spread.',
-        'Prune the lower infected leaves to improve air circulation.',
-        'Avoid overhead watering; switch to drip irrigation to keep foliage dry.',
-        'Apply a layer of mulch to prevent soil-borne spores from splashing onto leaves.'
-      ],
-      grounding_links: [
-        { title: 'Cornell AG: Managing Early Blight', uri: 'https://vegetablemdonline.ppath.cornell.edu/' },
-        { title: 'Organic Control Protocols', uri: 'https://omri.org/' }
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  
+  const response = await ai.models.generateContent({
+    model: 'gemini-3-flash-preview',
+    contents: {
+      parts: [
+        { text: "Analyze this agricultural image for signs of crop disease. Provide a diagnosis in JSON format including: crop_type (Tomato, Potato, Corn, Rice, or Unknown), disease_name, scientific_name (if applicable), confidence_score (0-100), severity_level (Mild, Moderate, or Severe), a concise expert description, and 4 specific agronomic solutions." },
+        { inlineData: { mimeType: 'image/jpeg', data: base64Image } }
       ]
     },
-    {
-      crop_type: 'Corn',
-      disease_name: 'Common Rust',
-      scientific_name: 'Puccinia sorghi',
-      confidence_score: 88.5,
-      severity_level: 'Mild',
-      description: 'Elongated brownish pustules are visible on both upper and lower leaf surfaces. The infection is currently localized.',
-      possible_solutions: [
-        'Monitor weather conditions; rust thrives in high humidity and cool temperatures.',
-        'Utilize resistant hybrids for the next planting season.',
-        'Foliar fungicides are rarely economical unless infection occurs before silking.',
-        'Ensure proper nitrogen levels to help the plant maintain vigor.'
-      ],
-      grounding_links: [
-        { title: 'Crop Protection Network: Rust Guide', uri: 'https://cropprotectionnetwork.org/' }
-      ]
+    config: {
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: Type.OBJECT,
+        properties: {
+          crop_type: { type: Type.STRING },
+          disease_name: { type: Type.STRING },
+          scientific_name: { type: Type.STRING },
+          confidence_score: { type: Type.NUMBER },
+          severity_level: { type: Type.STRING },
+          description: { type: Type.STRING },
+          possible_solutions: { type: Type.ARRAY, items: { type: Type.STRING } }
+        },
+        required: ["crop_type", "disease_name", "confidence_score", "severity_level", "description", "possible_solutions"]
+      },
+      tools: [{ googleSearch: {} }]
     }
-  ];
+  });
 
-  // Return a random mock result or the first one
-  return mockResults[Math.floor(Math.random() * mockResults.length)];
+  const text = response.text || "{}";
+  let parsed = JSON.parse(text);
+
+  const groundingLinks: { title: string; uri: string }[] = [];
+  const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
+  if (chunks) {
+    chunks.forEach((chunk: any) => {
+      if (chunk.web?.uri) {
+        groundingLinks.push({ title: chunk.web.title || "External Source", uri: chunk.web.uri });
+      }
+    });
+  }
+
+  return {
+    ...parsed,
+    crop_type: parsed.crop_type as CropType,
+    severity_level: parsed.severity_level as SeverityLevel,
+    grounding_links: groundingLinks
+  };
 };
 
 /**
- * Simulated chat interaction for demo mode.
+ * Fetches real-time weather using Gemini Search grounding, focused on agricultural risk.
+ */
+export const getWeatherForecast = async (location: string): Promise<{ forecast: WeatherDay[], alert?: string }> => {
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  
+  const response = await ai.models.generateContent({
+    model: 'gemini-3-flash-preview',
+    contents: `Get a real-time 5-day weather forecast for ${location}. Focus on data critical for farming: humidity, precipitation, and extreme temps. 
+    Evaluate agronomic risk level (Low/Med/High) for each day (e.g., High humidity + moderate temp = High risk for fungal blight).
+    Return as JSON.`,
+    config: {
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: Type.OBJECT,
+        properties: {
+          alert: { type: Type.STRING, description: "Any major regional weather warning" },
+          forecast: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                day: { type: Type.STRING, description: "Short day name, e.g., MON" },
+                temp: { type: Type.STRING, description: "High temperature in Celsius, e.g., 28°" },
+                condition: { type: Type.STRING, description: "Single word weather condition" },
+                risk_level: { type: Type.STRING, description: "Low, Med, or High" },
+                risk_reason: { type: Type.STRING, description: "Short reason for the risk level" }
+              },
+              required: ["day", "temp", "condition", "risk_level", "risk_reason"]
+            }
+          }
+        },
+        required: ["forecast"]
+      },
+      tools: [{ googleSearch: {} }]
+    }
+  });
+
+  const parsed = JSON.parse(response.text || '{"forecast": []}');
+  return parsed;
+};
+
+/**
+ * Communicates with the Agronomist Expert AI model with full conversation history.
  */
 export const chatWithExpert = async (history: ChatMessage[], message: string) => {
-  await new Promise(resolve => setTimeout(resolve, 1200));
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const chatHistory = history.map(m => ({ role: m.role, parts: m.parts }));
 
-  const text = "This is a simulated expert response for the demo version. In a live environment, I would analyze your specific soil data, regional weather patterns, and the detection history of your farm ticket to provide precise agronomic advice. For now, please feel free to explore the UI!";
-  
-  const links = [
-    { title: 'Regional Weather Outlook', uri: '#' },
-    { title: 'Pest Management Calendar', uri: '#' }
-  ];
+  const response = await ai.models.generateContent({
+    model: 'gemini-3-flash-preview',
+    contents: [...chatHistory, { role: 'user', parts: [{ text: message }] }],
+    config: {
+      systemInstruction: "You are a world-class Agronomist Expert. Use Google Search for regional agricultural alerts.",
+      tools: [{ googleSearch: {} }]
+    }
+  });
 
-  return { text, links };
+  const groundingLinks: { title: string; uri: string }[] = [];
+  const chunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks;
+  if (chunks) {
+    chunks.forEach((chunk: any) => {
+      if (chunk.web?.uri) {
+        groundingLinks.push({ title: chunk.web.title || "Field Resource", uri: chunk.web.uri });
+      }
+    });
+  }
+
+  return { 
+    text: response.text || "Connection error.", 
+    links: groundingLinks 
+  };
 };
