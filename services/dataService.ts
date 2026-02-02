@@ -1,5 +1,5 @@
 
-import { DetectionResult, UserProfile, User, Theme } from '../types';
+import { DetectionResult, UserProfile, User, Theme } from '../types.ts';
 
 const STORAGE_KEYS = {
   USER: 'agroguard_user_ticket',
