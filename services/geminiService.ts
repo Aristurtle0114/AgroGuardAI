@@ -14,7 +14,7 @@ export interface AIDetectionResponse {
 const getAI = () => {
   const apiKey = process.env.API_KEY;
   if (!apiKey) {
-    console.error("CRITICAL: Gemini API Key is missing. Check Vercel Environment Variables.");
+    console.error("CRITICAL: Gemini API Key is missing. The AI will not function without a valid API key in process.env.API_KEY.");
   }
   return new GoogleGenAI({ apiKey: apiKey || '' });
 };
@@ -83,7 +83,7 @@ export const analyzeCropImage = async (base64Image: string): Promise<AIDetection
     return data as AIDetectionResponse;
   } catch (error) {
     console.error('Gemini Analysis Error:', error);
-    throw new Error('Analysis failed. Please check the console for details.');
+    throw new Error('Analysis failed. Check your API key and connection.');
   }
 };
 
@@ -91,7 +91,6 @@ export const chatWithExpert = async (history: ChatMessage[], message: string) =>
   const ai = getAI();
   
   try {
-    // Clean history to match SDK expectations (role and parts only)
     const cleanedHistory = history.map(h => ({
       role: h.role,
       parts: h.parts
@@ -101,15 +100,14 @@ export const chatWithExpert = async (history: ChatMessage[], message: string) =>
       model: 'gemini-3-flash-preview',
       history: cleanedHistory,
       config: {
-        systemInstruction: 'You are an Expert Agronomist AI. Provide helpful, accurate advice to farmers regarding crop health and soil management. Use Google Search to find specific regional details if needed.',
+        systemInstruction: 'You are an Expert Agronomist AI named AgroGuard Advisor. Help farmers with crop health, soil management, and disease treatment. Use Google Search to provide factual, up-to-date regional agricultural advice.',
         tools: [{ googleSearch: {} }],
       },
     });
     
     const response = await chat.sendMessage({ message });
-    const text = response.text || "I am currently processing your request.";
+    const text = response.text || "I'm having trouble retrieving a response.";
     
-    // Extract links from grounding metadata
     const groundingChunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
     const links = groundingChunks
       .filter(c => c.web)
@@ -118,11 +116,7 @@ export const chatWithExpert = async (history: ChatMessage[], message: string) =>
 
     return { text, links };
   } catch (error: any) {
-    console.error('Gemini Chat Error Details:', {
-      message: error.message,
-      status: error.status,
-      stack: error.stack
-    });
+    console.error('Gemini Chat Error:', error);
     throw error;
   }
 };
