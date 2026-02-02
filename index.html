@@ -29,6 +29,8 @@
         }
     </style>
     <script>
+      // Ensure process.env exists for the SDK
+      // The API_KEY must be provided via the hosting environment's variables
       window.process = window.process || { env: {} };
       window.process.env = window.process.env || {};
       

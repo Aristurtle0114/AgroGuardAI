@@ -14,7 +14,7 @@ export interface AIDetectionResponse {
 const getAI = () => {
   const apiKey = process.env.API_KEY;
   if (!apiKey) {
-    console.error("CRITICAL: Gemini API Key is missing. The AI will not function without a valid API key in process.env.API_KEY.");
+    console.error("CRITICAL: Gemini API Key is missing. Please ensure the API_KEY environment variable is set in your deployment settings.");
   }
   return new GoogleGenAI({ apiKey: apiKey || '' });
 };
@@ -24,7 +24,7 @@ export const analyzeCropImage = async (base64Image: string): Promise<AIDetection
   
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-3-pro-preview',
       contents: {
         parts: [
           {
@@ -97,16 +97,16 @@ export const chatWithExpert = async (history: ChatMessage[], message: string) =>
     }));
 
     const chat = ai.chats.create({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-3-pro-preview',
       history: cleanedHistory,
       config: {
-        systemInstruction: 'You are an Expert Agronomist AI named AgroGuard Advisor. Help farmers with crop health, soil management, and disease treatment. Use Google Search to provide factual, up-to-date regional agricultural advice.',
+        systemInstruction: 'You are an Expert Agronomist AI named AgroGuard Advisor. Help farmers with crop health, soil management, and disease treatment. Provide detailed, scientific yet accessible advice. Always prioritize sustainable and safe agricultural practices.',
         tools: [{ googleSearch: {} }],
       },
     });
     
     const response = await chat.sendMessage({ message });
-    const text = response.text || "I'm having trouble retrieving a response.";
+    const text = response.text || "I'm having trouble retrieving a response at the moment.";
     
     const groundingChunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
     const links = groundingChunks
