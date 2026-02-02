@@ -9,40 +9,12 @@ import ProfilePage from './pages/ProfilePage';
 import ChatPage from './pages/ChatPage';
 import DiseaseResult from './components/DiseaseResult';
 
-// The 'aistudio' property is already defined on the Window interface globally as 'AIStudio'.
-// We remove our manual declaration to resolve the conflicting property definition error
-// and use type assertion when accessing it to ensure compatibility with pre-configured methods.
-
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [theme, setTheme] = useState<Theme>(dataService.getTheme());
   const [currentPage, setCurrentPage] = useState<string>('landing');
   const [selectedDetection, setSelectedDetection] = useState<DetectionResult | null>(null);
   const [ticketInput, setTicketInput] = useState('');
-  const [hasKey, setHasKey] = useState<boolean>(true);
-  const [isCheckingKey, setIsCheckingKey] = useState(true);
-
-  // Check for API key on mount
-  useEffect(() => {
-    const checkApiKey = async () => {
-      // Use any to bypass potential remaining type conflicts while accessing the global aistudio
-      const win = window as any;
-      if (typeof win.aistudio !== 'undefined') {
-        try {
-          const selected = await win.aistudio.hasSelectedApiKey();
-          // If not in process.env and not selected via window.aistudio, we need to prompt
-          setHasKey(!!process.env.API_KEY || selected);
-        } catch (e) {
-          console.error("Error checking API key:", e);
-          setHasKey(!!process.env.API_KEY);
-        }
-      } else {
-        setHasKey(!!process.env.API_KEY);
-      }
-      setIsCheckingKey(false);
-    };
-    checkApiKey();
-  }, []);
 
   useEffect(() => {
     const existingUser = dataService.getUser();
@@ -83,49 +55,7 @@ const App: React.FC = () => {
     }
   };
 
-  const handleConnectKey = async () => {
-    const win = window as any;
-    if (win.aistudio) {
-      try {
-        await win.aistudio.openSelectKey();
-        // Assume success as per instructions to avoid race conditions
-        setHasKey(true);
-      } catch (e) {
-        console.error("Error opening key selector:", e);
-      }
-    }
-  };
-
   const renderContent = () => {
-    // If no key is available, show the key connection screen first
-    if (!hasKey && !isCheckingKey) {
-      return (
-        <div className="min-h-[80vh] flex items-center justify-center px-4">
-          <div className="bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-xl w-full max-w-md text-center border border-slate-200 dark:border-slate-700">
-            <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/40 rounded-full flex items-center justify-center text-amber-600 dark:text-amber-400 mx-auto mb-6">
-              <i className="fa-solid fa-key text-3xl"></i>
-            </div>
-            <h2 className="text-2xl font-bold dark:text-white mb-2">Connect Farm Database</h2>
-            <p className="text-slate-500 dark:text-slate-400 text-sm mb-8">
-              A valid Gemini API key is required to access real-time agronomic intelligence. 
-              Please connect your project to continue.
-            </p>
-            <button 
-              onClick={handleConnectKey}
-              className="w-full bg-emerald-600 text-white py-4 rounded-xl font-bold hover:bg-emerald-700 transition-all flex items-center justify-center space-x-2"
-            >
-              <i className="fa-solid fa-plug"></i>
-              <span>Connect API Key</span>
-            </button>
-            <p className="mt-4 text-[10px] text-slate-400">
-              Note: Requires a paid Google Cloud project. <br/>
-              <a href="https://ai.google.dev/gemini-api/docs/billing" target="_blank" className="underline">View Billing Docs</a>
-            </p>
-          </div>
-        </div>
-      );
-    }
-
     if (currentPage === 'ticket' && !user) {
       return (
         <div className="min-h-[80vh] flex items-center justify-center bg-slate-50 dark:bg-slate-900 px-4 transition-colors">
@@ -213,12 +143,7 @@ const App: React.FC = () => {
         setSelectedDetection(null);
       }}
     >
-      {isCheckingKey ? (
-        <div className="min-h-[80vh] flex flex-col items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-emerald-600 border-t-transparent"></div>
-          <p className="mt-4 text-slate-500 font-medium">Authenticating System...</p>
-        </div>
-      ) : renderContent()}
+      {renderContent()}
     </Layout>
   );
 };
