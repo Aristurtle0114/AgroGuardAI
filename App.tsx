@@ -18,6 +18,12 @@ const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<string>('landing');
   const [selectedDetection, setSelectedDetection] = useState<DetectionResult | null>(null);
   const [chatContext, setChatContext] = useState<string | undefined>(undefined);
+
+  // Auth/Registration States (from main branch)
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
+  const [regFarmName, setRegFarmName] = useState('');
+  const [loginId, setLoginId] = useState('');
+  const [generatedKey, setGeneratedKey] = useState<string | null>(null);
   const [ticketInput, setTicketInput] = useState('');
 
   useEffect(() => {
