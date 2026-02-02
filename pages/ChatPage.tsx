@@ -42,10 +42,11 @@ const ChatPage: React.FC<{ user: User }> = ({ user }) => {
       console.error("Chat Execution Error:", error);
       
       let errorDisplay = "Expert connection error. Please check your internet and try again.";
-      if (error?.message?.includes("API_KEY")) {
-        errorDisplay = "System Configuration Error: API Key is invalid or missing.";
+      
+      if (error.message === "RESELECT_KEY") {
+        errorDisplay = "Agricultural Database Access Denied. Your session credentials may have expired. Please try refreshing or reconnecting your API project.";
       } else if (error?.message) {
-        errorDisplay = `AI Error: ${error.message}`;
+        errorDisplay = `AI Diagnostic Error: ${error.message}`;
       }
         
       setMessages(prev => [...prev, { 

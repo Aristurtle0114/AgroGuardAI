@@ -11,16 +11,20 @@ export interface AIDetectionResponse {
   grounding_links?: { title: string; uri: string }[];
 }
 
-const getAI = () => {
+/**
+ * Creates a fresh instance of the AI client.
+ * Must be called inside functions to ensure it uses the key selected by the user.
+ */
+const createClient = () => {
   const apiKey = process.env.API_KEY;
   if (!apiKey) {
-    console.error("CRITICAL: Gemini API Key is missing. Please ensure the API_KEY environment variable is set in your deployment settings.");
+    throw new Error("API key is not configured. Please select an API key.");
   }
-  return new GoogleGenAI({ apiKey: apiKey || '' });
+  return new GoogleGenAI({ apiKey });
 };
 
 export const analyzeCropImage = async (base64Image: string): Promise<AIDetectionResponse> => {
-  const ai = getAI();
+  const ai = createClient();
   
   try {
     const response = await ai.models.generateContent({
@@ -57,11 +61,12 @@ export const analyzeCropImage = async (base64Image: string): Promise<AIDetection
 
     const data = JSON.parse(response.text || '{}');
 
-    if (data.disease_name && data.disease_name !== 'Healthy' && data.disease_name !== 'Unknown') {
+    // Only search if it's not a healthy crop
+    if (data.disease_name && data.disease_name.toLowerCase() !== 'healthy') {
       try {
         const searchResponse = await ai.models.generateContent({
           model: 'gemini-3-flash-preview',
-          contents: `Provide 3 reliable online resources or treatment guides for ${data.disease_name} in ${data.crop_type} crops.`,
+          contents: `Provide 3 treatment resources for ${data.disease_name} in ${data.crop_type}.`,
           config: { tools: [{ googleSearch: {} }] },
         });
 
@@ -69,26 +74,28 @@ export const analyzeCropImage = async (base64Image: string): Promise<AIDetection
         data.grounding_links = chunks
           .filter(c => c.web)
           .map(c => ({
-            title: c.web?.title || 'Expert Resource',
+            title: c.web?.title || 'Expert Guide',
             uri: c.web?.uri || '',
           }))
           .filter(link => link.uri)
           .slice(0, 3);
       } catch (e) {
-        console.warn("Grounding search failed:", e);
-        data.grounding_links = [];
+        console.warn("Search grounding failed:", e);
       }
     }
 
     return data as AIDetectionResponse;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Gemini Analysis Error:', error);
-    throw new Error('Analysis failed. Check your API key and connection.');
+    if (error.message?.includes("entity was not found")) {
+      throw new Error("The selected API project is invalid or lacks access. Please re-select your key.");
+    }
+    throw error;
   }
 };
 
 export const chatWithExpert = async (history: ChatMessage[], message: string) => {
-  const ai = getAI();
+  const ai = createClient();
   
   try {
     const cleanedHistory = history.map(h => ({
@@ -100,13 +107,13 @@ export const chatWithExpert = async (history: ChatMessage[], message: string) =>
       model: 'gemini-3-pro-preview',
       history: cleanedHistory,
       config: {
-        systemInstruction: 'You are an Expert Agronomist AI named AgroGuard Advisor. Help farmers with crop health, soil management, and disease treatment. Provide detailed, scientific yet accessible advice. Always prioritize sustainable and safe agricultural practices.',
+        systemInstruction: 'You are an Expert Agronomist AI named AgroGuard Advisor. Provide precise, scientific advice on crop health. Use your search tools to find regional treatment data.',
         tools: [{ googleSearch: {} }],
       },
     });
     
     const response = await chat.sendMessage({ message });
-    const text = response.text || "I'm having trouble retrieving a response at the moment.";
+    const text = response.text || "I am processing your agronomic query.";
     
     const groundingChunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
     const links = groundingChunks
@@ -117,6 +124,9 @@ export const chatWithExpert = async (history: ChatMessage[], message: string) =>
     return { text, links };
   } catch (error: any) {
     console.error('Gemini Chat Error:', error);
+    if (error.message?.includes("entity was not found")) {
+      throw new Error("RESELECT_KEY");
+    }
     throw error;
   }
 };

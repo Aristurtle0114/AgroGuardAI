@@ -29,14 +29,9 @@
         }
     </style>
     <script>
-      // Ensure process.env exists for the SDK
-      // The API_KEY must be provided via the hosting environment's variables
+      // Shim process.env for the SDK while preserving existing values
       window.process = window.process || { env: {} };
       window.process.env = window.process.env || {};
-      
-      window.onerror = function(msg, url, line, col, error) {
-        console.error("AgroGuard Runtime Error:", msg, "at", url, ":", line);
-      };
     </script>
     <script type="importmap">
 {
