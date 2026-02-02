@@ -1,6 +1,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { CropType, SeverityLevel, ChatMessage } from '../types.ts';
+import { CropType, SeverityLevel, ChatMessage } from '../types';
 
+// The API key is obtained from process.env.API_KEY which is shimmed in index.html
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
 
 export interface AIDetectionResponse {
@@ -14,10 +15,8 @@ export interface AIDetectionResponse {
 }
 
 export const analyzeCropImage = async (base64Image: string): Promise<AIDetectionResponse> => {
-  const model = 'gemini-3-flash-preview';
-
   const response = await ai.models.generateContent({
-    model,
+    model: 'gemini-3-flash-preview',
     contents: {
       parts: [
         {
@@ -27,7 +26,7 @@ export const analyzeCropImage = async (base64Image: string): Promise<AIDetection
           },
         },
         {
-          text: `Analyze this crop image for potential diseases. Identify the crop type (Tomato, Potato, Corn, Rice, or Unknown) and the specific disease. Provide output in JSON.`,
+          text: `Analyze this crop image for potential diseases. Identify the crop type and specific disease. Provide output in JSON.`,
         },
       ],
     },
@@ -67,7 +66,6 @@ export const analyzeCropImage = async (base64Image: string): Promise<AIDetection
         }))
         .slice(0, 3);
     } catch (e) {
-      console.warn('Search grounding failed', e);
       data.grounding_links = [];
     }
   }

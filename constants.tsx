@@ -1,4 +1,4 @@
-import { DiseaseInfo, Treatment } from './types.ts';
+import { DiseaseInfo, Treatment } from './types';
 
 export const SUPPORTED_DISEASES: DiseaseInfo[] = [
   {
@@ -6,19 +6,17 @@ export const SUPPORTED_DISEASES: DiseaseInfo[] = [
     crop_type: 'Tomato',
     common_name: 'Early Blight',
     scientific_name: 'Alternaria solani',
-    description: 'Early blight is a common fungal disease that affects tomato leaves, stems, and fruit. It appears first on older, lower leaves as small brown spots with concentric rings.',
+    description: 'A common fungal disease that affects tomato leaves, stems, and fruit.',
     symptoms: [
-      'Dark brown spots with concentric rings on lower leaves',
+      'Dark brown spots with concentric rings',
       'Yellowing around spots',
-      'Premature leaf drop',
-      'Stem lesions near soil line'
+      'Leaf drop'
     ],
-    causes: 'Caused by fungus Alternaria solani. Thrives in warm, humid conditions.',
+    causes: 'Alternaria solani fungus.',
     prevention_tips: [
-      'Practice crop rotation',
-      'Remove infected plant debris',
-      'Water at soil level',
-      'Ensure proper spacing'
+      'Crop rotation',
+      'Proper spacing',
+      'Watering at soil level'
     ]
   },
   {
@@ -26,26 +24,54 @@ export const SUPPORTED_DISEASES: DiseaseInfo[] = [
     crop_type: 'Tomato',
     common_name: 'Late Blight',
     scientific_name: 'Phytophthora infestans',
-    description: 'A devastating disease that can quickly kill plants in cool, wet weather. It affects leaves, stems, and fruit with large, water-soaked spots.',
+    description: 'Devastating disease that spreads quickly in cool, wet weather.',
     symptoms: [
-      'Large, irregular water-soaked spots on leaves',
-      'White fungal growth on leaf undersides in wet conditions',
-      'Firm, dark brown blotches on green fruit'
+      'Large irregular water-soaked spots',
+      'White fungal growth on undersides',
+      'Brown blotches on fruit'
     ],
-    causes: 'Oomycete pathogen Phytophthora infestans. Spreads through airborne spores.',
+    causes: 'Phytophthora infestans oomycete.',
     prevention_tips: [
       'Use resistant varieties',
-      'Destroy volunteer tomato/potato plants',
-      'Ensure good airflow'
+      'Destroy infected plants',
+      'Improve airflow'
     ]
-  },
-  {
-    id: 'd3',
-    crop_type: 'Corn',
-    common_name: 'Common Rust',
-    scientific_name: 'Puccinia sorghi',
-    description: 'Common rust appears as cinnamon-brown pustules on both upper and lower leaf surfaces.',
-    symptoms: [
-      'Elongated brown pustules on leaves',
-      'Leaf yellowing and early senescence',
-      '
+  }
+];
+
+export const MOCK_TREATMENTS: Record<string, Treatment[]> = {
+  'd1': [
+    {
+      id: 't1',
+      disease_id: 'd1',
+      treatment_name: 'Copper Fungicide',
+      treatment_type: 'Chemical',
+      instructions: 'Spray every 7-10 days.',
+      dosage: '2 tbsp per gallon',
+      application_method: 'Foliar spray',
+      frequency: 'Every 7 days',
+      cost_estimate_min: 15,
+      cost_estimate_max: 25,
+      currency: 'USD',
+      safety_precautions: 'Wear PPE.',
+      expected_results: 'Control of fungal spread.'
+    }
+  ],
+  'd2': [
+    {
+      id: 't2',
+      disease_id: 'd2',
+      treatment_name: 'Mancozeb',
+      treatment_type: 'Chemical',
+      instructions: 'Apply at first sign of symptoms.',
+      dosage: '1.5 lbs/acre',
+      application_method: 'Pressure sprayer',
+      frequency: 'Every 5 days',
+      cost_estimate_min: 30,
+      cost_estimate_max: 50,
+      currency: 'USD',
+      safety_precautions: 'Full PPE required.',
+      expected_results: 'Stopping active infection cycle.'
+    }
+  ]
+};
