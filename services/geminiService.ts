@@ -35,11 +35,22 @@ export interface MarketPrice {
   source_summary: string;
 }
 
+
+const getGenAI = () => {
+  const key = import.meta.env.VITE_GEMINI_API_KEY;
+  if (!key) {
+    console.error("CRITICAL: VITE_GEMINI_API_KEY is missing!");
+    alert("API Key is missing. Please check .env file and restart the server.");
+    throw new Error("API Key is missing. Please set VITE_GEMINI_API_KEY in .env");
+  }
+  return new GoogleGenAI({ apiKey: key });
+};
+
 /**
  * Analyzes crop images using Gemini-3-flash-preview with multimodal input.
  */
 export const analyzeCropImage = async (base64Image: string): Promise<AIDetectionResponse> => {
-  const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
+  const ai = getGenAI();
 
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
@@ -81,7 +92,7 @@ export const analyzeCropImage = async (base64Image: string): Promise<AIDetection
  * Fetches real-time weather using Gemini Search and Maps grounding.
  */
 export const getWeatherForecast = async (location: string, lat?: number, lng?: number): Promise<WeatherForecastResponse> => {
-  const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
+  const ai = getGenAI();
 
   const locationString = lat && lng ? `coordinates ${lat}, ${lng}` : location;
 
@@ -142,7 +153,7 @@ export const getWeatherForecast = async (location: string, lat?: number, lng?: n
  * Fetches current market prices for major Philippine crops using Google Search grounding.
  */
 export const getMarketPrices = async (): Promise<{ prices: MarketPrice[], links: { title: string, uri: string }[] }> => {
-  const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
+  const ai = getGenAI();
 
   const response = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
@@ -195,7 +206,7 @@ export const getMarketPrices = async (): Promise<{ prices: MarketPrice[], links:
  * Communicates with the Agronomist Expert AI model with full conversation history.
  */
 export const chatWithExpert = async (history: ChatMessage[], message: string) => {
-  const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
+  const ai = getGenAI();
   const chatHistory = history.map(m => ({ role: m.role, parts: m.parts }));
 
   const response = await ai.models.generateContent({

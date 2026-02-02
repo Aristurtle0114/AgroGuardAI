@@ -29,3 +29,11 @@ View your app in AI Studio: https://ai.studio/apps/drive/1yFX1EU61EkfgHbkF_Zl1Cn
 4. **Important**: Add your `GEMINI_API_KEY` in the Vercel Project Settings > Environment Variables.
 5. Deploy!
 
+## Troubleshooting
+
+- **Error: "An API Key must be set..."**
+  - This means the `VITE_GEMINI_API_KEY` is not being read.
+  - **Solution**: 
+    1. Ensure your `.env` file has the key with the `VITE_` prefix.
+    2. **Restart the development server** (`Ctrl+C` then `npm run dev`). Vite does not pick up new env vars automatically.
+
