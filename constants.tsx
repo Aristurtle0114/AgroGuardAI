@@ -1,5 +1,4 @@
-
-import { DiseaseInfo, Treatment } from './types.ts';
+import { DiseaseInfo, Treatment } from './types';
 
 export const SUPPORTED_DISEASES: DiseaseInfo[] = [
   {

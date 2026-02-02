@@ -1,8 +1,7 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
-import { CropType, SeverityLevel, ChatMessage } from '../types.ts';
+import { CropType, SeverityLevel, ChatMessage } from '../types';
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
 
 export interface AIDetectionResponse {
   crop_type: CropType;
@@ -51,21 +50,26 @@ export const analyzeCropImage = async (base64Image: string): Promise<AIDetection
 
   const data = JSON.parse(response.text || '{}');
 
-  if (data.disease_name !== 'Healthy') {
-    const searchResponse = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: `Latest treatment protocols for ${data.disease_name} in ${data.crop_type} crops.`,
-      config: { tools: [{ googleSearch: {} }] },
-    });
+  if (data.disease_name !== 'Healthy' && data.disease_name !== 'Unknown') {
+    try {
+      const searchResponse = await ai.models.generateContent({
+        model: 'gemini-3-flash-preview',
+        contents: `Latest treatment protocols for ${data.disease_name} in ${data.crop_type} crops.`,
+        config: { tools: [{ googleSearch: {} }] },
+      });
 
-    const chunks = searchResponse.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
-    data.grounding_links = chunks
-      .filter(c => c.web)
-      .map(c => ({
-        title: c.web?.title || 'External Resource',
-        uri: c.web?.uri || '',
-      }))
-      .slice(0, 3);
+      const chunks = searchResponse.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
+      data.grounding_links = chunks
+        .filter(c => c.web)
+        .map(c => ({
+          title: c.web?.title || 'External Resource',
+          uri: c.web?.uri || '',
+        }))
+        .slice(0, 3);
+    } catch (e) {
+      console.warn('Search grounding failed', e);
+      data.grounding_links = [];
+    }
   }
 
   return data as AIDetectionResponse;
