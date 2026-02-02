@@ -14,7 +14,7 @@ export interface AIDetectionResponse {
 const getAI = () => {
   const apiKey = process.env.API_KEY;
   if (!apiKey) {
-    console.warn("Gemini API Key is missing. Some features may not work.");
+    console.error("CRITICAL: Gemini API Key is missing from process.env.API_KEY");
   }
   return new GoogleGenAI({ apiKey: apiKey || '' });
 };
@@ -75,6 +75,7 @@ export const analyzeCropImage = async (base64Image: string): Promise<AIDetection
           .filter(link => link.uri)
           .slice(0, 3);
       } catch (e) {
+        console.warn("Grounding search failed:", e);
         data.grounding_links = [];
       }
     }
@@ -90,20 +91,34 @@ export const chatWithExpert = async (history: ChatMessage[], message: string) =>
   const ai = getAI();
   
   try {
+    // We clean history to remove UI-only properties like 'links' before sending to SDK
+    const cleanedHistory = history.map(h => ({
+      role: h.role,
+      parts: h.parts
+    }));
+
     const chat = ai.chats.create({
       model: 'gemini-3-flash-preview',
+      history: cleanedHistory, // Passing history allows the model to remember the conversation
       config: {
-        systemInstruction: 'You are an Expert Agronomist AI. Provide helpful, accurate advice to farmers regarding crop health and soil management.',
+        systemInstruction: 'You are an Expert Agronomist AI named AgroGuard Advisor. Provide helpful, accurate advice to farmers regarding crop health, pest control, and soil management. Use your grounding tool to find up-to-date regional information.',
         tools: [{ googleSearch: {} }],
       },
     });
+    
     const response = await chat.sendMessage({ message });
     const text = response.text || "I'm having trouble connecting to my knowledge base.";
-    const grounding = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
-    const links = grounding.filter(c => c.web).map(c => ({ title: c.web?.title, uri: c.web?.uri }));
+    
+    // Extract grounding chunks from metadata
+    const groundingChunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
+    const links = groundingChunks
+      .filter(c => c.web)
+      .map(c => ({ title: c.web?.title, uri: c.web?.uri }))
+      .filter(l => l.uri); // Ensure we only return valid links
+
     return { text, links };
   } catch (error) {
-    console.error('Expert Chat Error:', error);
-    throw new Error('Could not connect to the Expert AI.');
+    console.error('Expert Chat Detailed Error:', error);
+    throw error; // Re-throw so the UI can catch it
   }
 };

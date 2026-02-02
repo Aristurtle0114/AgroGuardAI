@@ -14,7 +14,7 @@ const ChatPage: React.FC<{ user: User }> = ({ user }) => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, [messages, isLoading]);
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,15 +22,33 @@ const ChatPage: React.FC<{ user: User }> = ({ user }) => {
 
     const userMessage = input;
     setInput('');
-    const newMessages: ChatMessage[] = [...messages, { role: 'user', parts: [{ text: userMessage }] }];
-    setMessages(newMessages);
+    const userMsgObj: ChatMessage = { role: 'user', parts: [{ text: userMessage }] };
+    const updatedMessages: ChatMessage[] = [...messages, userMsgObj];
+    
+    setMessages(updatedMessages);
     setIsLoading(true);
 
     try {
+      // Pass the current messages (history) to the expert
       const response = await chatWithExpert(messages, userMessage);
-      setMessages(prev => [...prev, { role: 'model', parts: [{ text: response.text }] }]);
-    } catch (error) {
-      setMessages(prev => [...prev, { role: 'model', parts: [{ text: "Expert connection error. Please try again." }] }]);
+      
+      const aiMsgObj: ChatMessage = { 
+        role: 'model', 
+        parts: [{ text: response.text }],
+        links: response.links
+      };
+      
+      setMessages(prev => [...prev, aiMsgObj]);
+    } catch (error: any) {
+      console.error("Chat Error:", error);
+      const errorMsg = error?.message?.includes("API_KEY") 
+        ? "API Key missing or invalid. Please check your environment configuration."
+        : "Expert connection error. The service might be temporarily unavailable.";
+        
+      setMessages(prev => [...prev, { 
+        role: 'model', 
+        parts: [{ text: errorMsg }] 
+      }]);
     } finally {
       setIsLoading(false);
     }
@@ -59,6 +77,26 @@ const ChatPage: React.FC<{ user: User }> = ({ user }) => {
                 : 'bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-bl-none border border-slate-200 dark:border-slate-700'
             }`}>
               <p className="text-sm leading-relaxed whitespace-pre-wrap">{m.parts[0].text}</p>
+              
+              {m.links && m.links.length > 0 && (
+                <div className="mt-4 pt-3 border-t border-slate-200 dark:border-slate-700">
+                  <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2">Sources:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {m.links.map((link, lIdx) => (
+                      <a 
+                        key={lIdx} 
+                        href={link.uri} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="flex items-center space-x-1 px-2 py-1 bg-white/50 dark:bg-slate-900/50 rounded-md text-[10px] font-medium text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors border border-emerald-100 dark:border-emerald-900/50"
+                      >
+                        <i className="fa-solid fa-link text-[8px]"></i>
+                        <span className="max-w-[120px] truncate">{link.title || 'Source'}</span>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         ))}

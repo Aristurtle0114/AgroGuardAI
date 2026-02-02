@@ -29,22 +29,17 @@
         }
     </style>
     <script>
-      // Initialize process shim immediately for the Gemini SDK
-      window.process = { 
-        env: { 
-          API_KEY: "" 
-        } 
-      };
+      /** 
+       * Initialize process shim safely.
+       * We check if process.env.API_KEY already exists to avoid overwriting it 
+       * if it was injected by the build system.
+       */
+      window.process = window.process || { env: {} };
+      window.process.env = window.process.env || {};
       
-      // Error tracking to catch early failures
+      // Basic runtime error logging
       window.onerror = function(msg, url, line, col, error) {
-        console.error("Critical Error:", msg, "at", url, ":", line);
-        var root = document.getElementById('root');
-        if (root && root.innerHTML === "") {
-          root.innerHTML = "<div style='padding: 20px; color: #ef4444; text-align: center; font-family: sans-serif;'>" +
-            "<h2>App failed to load</h2><p>Please check your internet connection or try refreshing.</p>" +
-            "<small style='color: #94a3b8'>" + msg + "</small></div>";
-        }
+        console.error("AgroGuard Runtime Error:", msg, "at", url, ":", line);
       };
     </script>
     <script type="importmap">

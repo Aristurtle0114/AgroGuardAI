@@ -1,4 +1,3 @@
-
 export type CropType = 'Tomato' | 'Potato' | 'Corn' | 'Rice' | 'Unknown';
 
 export type SeverityLevel = 'Mild' | 'Moderate' | 'Severe';
@@ -62,4 +61,5 @@ export interface Treatment {
 export interface ChatMessage {
   role: 'user' | 'model';
   parts: { text: string }[];
+  links?: { title?: string; uri?: string }[];
 }
